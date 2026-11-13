@@ -166,6 +166,12 @@ Một lỗi tương tự: AI **hứa** "dược sĩ sẽ gọi trong 2 phút" l�
 - **Sai thì sao:** tool chỉ đọc, nên chạy sai không hại ai. Cái nguy hiểm là AI **nói quá** những gì Observation có: K1 nói "còn hàng" khi `ton_kho_cua_hang = null`; K3 nói "an toàn cho bà bầu" khi `thai_ky = null`.
 - **Luật thêm:** câu trả lời chỉ nói điều có trong Observation; trường `null` phải nói ra là "không có dữ liệu". Trên prototype, cột Trước tô đỏ chỗ bịa, cột Sau trích đúng trường.
 
+**Tool nhóm thêm: `hoi_lai_khach(cau_hoi, lua_chon)`** · **tự làm, có giới hạn bằng code.** AI hỏi lại khách một câu, kèm nút trả lời nhanh, thay vì đoán (G10). Thẻ sàng lọc 5 ô là một lần gọi tool này.
+- **Sai thì sao:** hỏi thiếu thì AI đoán (K2: gợi ý khi chưa biết ai dùng thuốc). Hỏi thừa thì khách bực và bỏ đi (K5), hoặc chậm đúng lúc không được chậm (K4). Câu hỏi luôn đảo lại được: khách bỏ qua là xong.
+- **Giới hạn trong code (`canAsk()`):** tối đa 1 câu mỗi lượt, 2 lần mỗi cuộc chat. **Không hỏi** khi có dấu hiệu nguy hiểm (K4: cảnh báo đi khám luôn) hoặc khi khách đã gắt (K5: chuyển dược sĩ). Hết lượt hỏi mà vẫn thiếu thông tin thì chuyển dược sĩ với lý do "khách không cho biết người dùng thuốc".
+- **Trên prototype:** K1 hỏi "Bạn ở khu nào…" với nút Quận 1 / Quận 3 / Phú Nhuận. Tin AI không hiểu được hỏi lại bằng 3 lựa chọn, không đẩy cho dược sĩ. Mỗi lần hỏi ghi "lần hỏi n/2" trong ReAct.
+- **Phương án đã loại:** *không giới hạn* (cột Trước ở K5 hỏi rồi bị khách gắt, chiều theo và bán); *cấm hỏi* (AI phải đoán, đúng lỗi K2).
+
 **Vai trò của Claude thật trong thiết kế:** Claude không viết câu gửi khách. Nó (1) **trích các ô sàng lọc** từ tin khách: ai dùng thuốc, tuổi, mang thai, thuốc đang dùng, bệnh nền, bị bao lâu. Kết quả điền sẵn thẻ sàng lọc (khách chỉ cần xác nhận, G9) và đi vào tóm tắt cho dược sĩ. Nó (2) **bắt dấu hiệu nguy hiểm mà luật từ khoá bỏ sót** ("bé nằm im, không chịu bú", "nói ngọng, méo miệng"). Mỗi giá trị Claude trích phải là câu nguyên văn trong tin khách; server bỏ mọi giá trị không tìm thấy, và ô đó ghi "chưa biết". Đây là cùng nguyên tắc chống bịa như với `tra_cuu_san_pham`.
 
 ### Tool khó xếp nhất: `chuyen_duoc_si`
