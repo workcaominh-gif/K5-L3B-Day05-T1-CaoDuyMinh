@@ -9,13 +9,14 @@
   - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
   - Câu trích nào không có trong tin của khách thì server bỏ đi.
   - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (cột Sau, phân loại) và [`ai-log-naive.jsonl`](ai-log-naive.jsonl) (cột Trước) (111 lần gọi cột Sau, 71 lần gọi cột Trước, tin dựng, không có key).
+- **System prompt của Claude (cột Sau):** [`prompts/system_prompt.md`](prompts/system_prompt.md), theo 5 tầng Persona · Rules · Capabilities · Constraints · Output contract, có guardrail chống injection và boundary ngoài phạm vi.
 - **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
 
 ## Trang mặc định: kịch bản §2, trước và sau
 
 Mở <http://localhost:8767> (hoặc `?k=K5` để vào thẳng một kịch bản).
 
-1. Chọn kịch bản **K1–K11**; ★ là 2 kịch bản đắt nhất. Thẻ lớn ở đầu trang (đủ to cho máy chiếu) ghi: tin người dùng · lớp · AI có thể sai thế nào (giả định) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
+1. Chọn kịch bản **K1–K13** (K12: prompt injection, K13: ngoài phạm vi); ★ là 2 kịch bản đắt nhất. Thẻ lớn ở đầu trang (đủ to cho máy chiếu) ghi: tin người dùng · lớp · AI có thể sai thế nào (giả định) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
 2. Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Bấm "▸ Xem kết luận" ở đầu mỗi cột để hiện ô đỏ ✗ / xanh ✓ (ẩn sẵn, để người xem tự nhận ra trước). Chi tiết kịch bản (lớp, tool đang thử, nhãn, giả định lỗi, cách sửa) nằm dưới hai khung chat.
    Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Cả hai cột nhận cùng một tin.
    - **Trước:** với 11 kịch bản, cột này mô phỏng đúng lỗi giả định ở §2 (ghi nhãn "Mô phỏng lỗi giả định"). Ca lạ gõ tay thì gọi Claude thật với prompt bán hàng. Nhãn đỏ báo "N chỗ nói liều" (đã che), "không ai được báo", "lưu hồ sơ khi chưa xin phép".

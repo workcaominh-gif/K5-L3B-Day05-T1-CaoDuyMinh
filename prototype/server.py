@@ -32,38 +32,21 @@ def load_env():
 load_env()
 KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 MODEL = os.environ.get("MODEL", "claude-haiku-5-5")
-ROUTES = ["khan", "ke_don", "hoi_lieu", "chuyen_duoc_si", "sang_loc", "khong_phai_thuoc", "khac"]
+ROUTES = ["khan", "ke_don", "hoi_lieu", "chuyen_duoc_si", "sang_loc", "khong_phai_thuoc", "ngoai_pham_vi", "khac"]
 
-SYSTEM = """You triage messages sent to a Vietnamese pharmacy chain's "Ask a pharmacist" chat.
-You do NOT answer the customer and you never name a medicine or a dose. You only classify.
-
-Pick exactly one route, the most cautious one that applies, in this priority order:
-- khan: any danger sign for the person who will take the medicine (e.g. drowsy/hard to wake "li bì", "lơ mơ", trouble breathing, chest pain, seizure, fainting, blue lips, vomiting blood, fever >= 40, infant not feeding). They must go to a doctor / call 115 now.
-- ke_don: asks to buy or replace a prescription-only medicine (antibiotics, blood-pressure drugs, corticoids...).
-- hoi_lieu: asks for a dose or how much/how many to take.
-- chuyen_duoc_si: the person who will take the medicine is a child under 12, aged 65+, pregnant or breastfeeding, has a chronic disease or takes other medicines, or has self-medicated 5+ days without improvement, or wants something "stronger".
-- sang_loc: asks for a medicine but we do not yet know enough about who will take it (age, pregnancy, other medicines, duration).
-- khong_phai_thuoc: only asks about non-medicine products (saline, masks, thermometers), price or stock.
-- khac: anything else.
-
-The sender is often NOT the person who will take the medicine; identify that person.
-Reply with JSON only, no prose:
-{"route": "...", "nguoi_dung_thuoc": "<who will take it, in Vietnamese, or 'chưa rõ'>",
- "bang_chung": ["<exact short quotes copied from the customer's words that justify the route>"],
- "chua_biet": ["<facts still unknown, in Vietnamese>"],
- "trich": {"nguoi_dung_thuoc": "<quote or null>", "tuoi": "<quote or null>", "mang_thai_cho_bu": "<quote or null>",
-           "thuoc_dang_dung": "<quote or null>", "benh_nen_di_ung": "<quote or null>", "bi_bao_lau": "<quote or null>",
-           "trieu_chung": "<quote or null>"}}
-Every value in "trich" MUST be a short exact quote copied from the customer's words (earlier or new messages), or null when the customer did not say it. Never infer or guess a value."""
+SYSTEM = (HERE / "prompts" / "system_prompt.md").read_text(encoding="utf-8")
+# server-side guardrail: phrases that try to override the assistant's role or rules
+INJECTION = re.compile(r"bỏ qua (mọi |tất cả |các )?(hướng dẫn|quy tắc|lệnh|chỉ dẫn)|quên (hết |mọi )?(hướng dẫn|quy tắc)|ignore (all |any |previous |the )*(instructions|rules)|system prompt|prompt hệ thống|đóng vai|act as|giả vờ (là|làm)|bạn (bây giờ |giờ )?là (dược sĩ|bác sĩ)|chế độ (nhà phát triển|developer)|developer mode|jailbreak", re.I)
 
 
 def triage(text, history):
-    convo = "\n".join(f"- {h}" for h in history[-6:]) or "(none)"
+    clean = lambda t: t.replace("<", "‹").replace(">", "›")  # the customer cannot close or open our tags
+    convo = "\n".join(f"- {clean(h)}" for h in history[-6:]) or "(none)"
     body = {
         "model": MODEL,
         "max_tokens": 1500,
         "system": SYSTEM,
-        "messages": [{"role": "user", "content": f"Earlier customer messages:\n{convo}\n\nNew customer message:\n{text}"}],
+        "messages": [{"role": "user", "content": f"<tin_truoc>\n{convo}\n</tin_truoc>\n<tin_khach>\n{clean(text)}\n</tin_khach>"}],
     }
     req = urllib.request.Request(
         "https://api.anthropic.com/v1/messages",
@@ -97,6 +80,11 @@ def triage(text, history):
             out["trich"][k] = None
             if isinstance(v, str) and v.strip() and v.strip().lower() not in ("null", "none"):
                 out["trich_bo"].append(f"{k}: {v.strip()}")
+    # injection flag = model's own flag OR the server pattern; never trust the model alone
+    hit = INJECTION.search(text) or any(INJECTION.search(h) for h in history[-6:])
+    out["injection"] = bool(out.get("injection") is True or hit)
+    if hit:
+        out["injection_quote"] = hit.group(0)
     out["model"] = data.get("model", MODEL)
     out["ms"] = int((time.time() - t0) * 1000)
     u = data.get("usage", {})
