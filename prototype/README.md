@@ -8,7 +8,7 @@
   - Claude **chỉ được làm quyết định chặt hơn** bộ luật cứng trong trang, không bao giờ nới ra.
   - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
   - Câu trích nào không có trong tin của khách thì server bỏ đi.
-  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (cột Sau, phân loại) và [`ai-log-naive.jsonl`](ai-log-naive.jsonl) (cột Trước) (111 lần gọi cột Sau, 71 lần gọi cột Trước, tin dựng, không có key).
+  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (cột Sau, phân loại) và [`ai-log-naive.jsonl`](ai-log-naive.jsonl) (cột Trước) (lần gọi cột Sau và cột Trước, tin dựng, không có key).
 - **System prompt của Claude (cột Sau):** [`prompts/system_prompt.md`](prompts/system_prompt.md), theo 5 tầng Persona · Rules · Capabilities · Constraints · Output contract, có guardrail chống injection và boundary ngoài phạm vi.
 - **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
 

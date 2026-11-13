@@ -449,10 +449,13 @@ function definite(r){return codesOf(r).length>0}
 
 function emergency(r){
  S.emergency=r;hit('khuyen_di_kham','chuyen_duoc_si');
- const who=r.child||r.elder||'người bệnh';
- ai(`<div class="box red"><span class="n">3</span><b>Dấu hiệu "${esc(r.danger)}" cần được bác sĩ khám ngay.</b><br>Hãy đưa ${esc(who==='người bệnh'?who:who.toLowerCase())} đến cơ sở y tế gần nhất, hoặc gọi cấp cứu 115 nếu khó đánh thức, khó thở hay co giật. Đừng chờ tin nhắn này.
+ // Câu chữ theo spec §3 (Hải Quân): gọi tên dấu hiệu bằng đúng chữ khách viết; điều kiện đã xảy ra không viết thành "nếu".
+ const who=r.child?'Bé':r.elder?(r.elder[0].toUpperCase()+r.elder.slice(1).toLowerCase()):'Người bệnh';
+ const said=(r.t.match(new RegExp(R.danger.source,'gi'))||(r.ai&&r.ai.bang_chung&&r.ai.bang_chung.length?r.ai.bang_chung:[r.danger])).map(x=>x.replace(/^(cứ|đang|bị|giờ|tự nhiên)\s+/i,'')).filter((x,i,a)=>a.indexOf(x)===i);
+ const notYet=['co giật','tím tái','khó thở'].filter(x=>!new RegExp(x,'i').test(r.t));
+ ai(`<div class="box red"><span class="n">3</span><b>${esc(who)} đang ${said.map(esc).join(', ')}: đây là dấu hiệu cần đưa đi cấp cứu ngay.</b><br>Bạn gọi <b>115</b> hoặc đưa ${esc(who.toLowerCase())} đến cơ sở y tế gần nhất, đừng chờ tin nhắn này.${notYet.length?` Nếu ${esc(who.toLowerCase())} ${notYet.join(', ').replace(/, ([^,]*)$/,' hoặc $1')} thì gọi 115 ngay.`:''}
    <div class="btns"><a class="btn danger" href="tel:115">Gọi 115</a><button class="btn out" onclick="sys('(Mở bản đồ cơ sở y tế gần nhất: phần này mock)')">Cơ sở y tế gần nhất</button></div></div>
-   Mình <b>không gợi ý thuốc</b> trong trường hợp này. Dược sĩ trực đã được báo ca khẩn và sẽ gọi lại cho bạn trong vòng 2 phút để hỗ trợ trên đường đi.
+   Mình <b>không gợi ý thuốc</b> lúc này. Dược sĩ trực đã được báo ca khẩn và sẽ gọi lại cho bạn trong vòng 2 phút để hỗ trợ trên đường đi.
    ${chips([['red',r.danger],...(r.child?[['amb','người dùng thuốc: '+r.child]]:[]),...(r.age?[['amb',r.age.txt]]:[]),...(r.nondrug||r.drug?[['unk','yêu cầu mua thuốc: tạm gác lại']]:[])])}`);
  setQuick([['Để lại số điện thoại để dược sĩ gọi',()=>{me('0901 234 567 (số dựng)');sys('Đã gửi số cho dược sĩ trực. Ca của bạn ở đầu hàng, không xếp sau ai.')}],['Không sao đâu, cho mình mua hạ sốt thôi',()=>{me('Không sao đâu, cho mình mua hạ sốt thôi');ai(`Mình hiểu bạn muốn có thuốc ngay. Vì bé đang <b>${esc(r.danger)}</b>, cần bác sĩ xem trước khi dùng bất cứ thuốc nào, nên mình không gửi gợi ý mua. Dược sĩ vẫn sẽ gọi bạn trong 2 phút.<div class="btns"><a class="btn danger" href="tel:115">Gọi 115</a></div>`)}]]);
  RT.obs=RT.obs||{};RT.obs.chuyen_duoc_si='đã tạo ca KHẨN · <b>lý do trong danh sách:</b> dấu hiệu nguy hiểm';
