@@ -734,13 +734,13 @@ if(!SINGLE){
   if([...cell.querySelectorAll('.live')].some(x=>x.textContent===lbl))return;
   const sp=document.createElement('span');sp.className='live '+(col==='naive'?'bad':'good');sp.textContent=lbl;cell.appendChild(sp)});
  const k0=Math.max(0,SC.findIndex(x=>x.id===(q.get('k')||({1:'K4',2:'K5',3:'K1',4:'K2'})[q.get('case')]||'K4')));
- const cols=[['b','naive','Trước · AI làm theo lời khách','Mô phỏng đúng lỗi giả định ở §2 (ca lạ gõ tay: Claude thật + prompt bán hàng). Mọi tool tự làm, không có luật chạy trước'],['c','ours','Sau · Thiết kế của nhóm','Luật cứng chạy trước, Claude chỉ phân loại, tool tách mức tự chủ']];
+ const cols=[['b','naive','Trước · AI làm theo lời khách',''],['c','ours','Sau · Thiết kế của nhóm','']];
  document.body.innerHTML=`<div class="cmp-head"><a class="btn out" style="float:right" href="?view=single&case=1">Xem từng chế độ</a>
   <h1>Kịch bản rủi ro §2: trước và sau thiết kế</h1>
   <div class="cmp-row cases" id="kbtn">${SC.map((x,i)=>`<button data-k="${i}" class="${i===k0?'on':''}">${x.star?'★ ':''}${x.id}</button>`).join('')}<span class="sub">★ = 2 kịch bản đắt nhất</span></div>
   <div id="card" class="scard"></div>
   <form class="cmp-row" id="cform"><span id="cquick" class="quick" style="padding:0"></span><input id="cin" autocomplete="off" placeholder="Hoặc gõ ca lạ, gửi cho cả hai cột…"><button class="btn pri">Gửi cho cả hai</button></form></div>
-  <div class="cmp-grid two">${cols.map(([k,m,t,d])=>`<div class="cmp-col ${k}"><h3>${t}<small>${d}</small></h3><div class="vbox" id="v-${m}"></div><iframe data-m="${m}" src="?embed=1&mode=${m}&case=0&v=${Date.now()}"></iframe></div>`).join('')}</div>
+  <div class="cmp-grid two">${cols.map(([k,m,t,d])=>`<div class="cmp-col ${k}"><h3>${t}${d?`<small>${d}</small>`:''}</h3><div class="vbox" id="v-${m}"></div><iframe data-m="${m}" src="?embed=1&mode=${m}&case=0&v=${Date.now()}"></iframe></div>`).join('')}</div>
   <div id="cardx" class="cardx"></div>`;
  const frames=[...document.querySelectorAll('iframe')];
  const W=()=>frames.map(f=>f.contentWindow);
