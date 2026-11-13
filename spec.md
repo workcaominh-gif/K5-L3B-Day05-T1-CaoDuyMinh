@@ -6,7 +6,7 @@
 |---|---|---|
 | Cao Duy Minh | 2A202603988 | Bảng kịch bản §2, mức tự chủ §4, dựng prototype `prototype/index.html` |
 | Hoàng Nhật Minh| 2A202603992 | Lát cắt và phạm vi §1, Câu chữ AI §3  |
-| _(thành viên 3)_ | _(mã)_ | _(ví dụ: tiêu chí §6, kịch bản demo + ca lạ §7)_ |
+| Nguyễn Văn Hải Quân | 2A202603994 | Ca K4 bé 2 tuổi §3: câu chữ cảnh báo, đường đi sau cảnh báo |
 
 > Dữ liệu trong bài là dựng. Không chat với trợ lý thật, không dùng dữ liệu của người thật.
 
@@ -85,14 +85,21 @@ Phủ lớp: ① K1 · ② K2, K4, K5, K8 · ③ K6, K9, K12, K13 · ④ K3, K4,
 
 ### K4 · Bé 2 tuổi sốt, li bì (đường *failure*: chờ cũng là sai)
 
-- **AI nói (nguyên văn, prototype ca ①):**
-  > **Dấu hiệu "li bì" cần được bác sĩ khám ngay.** Hãy đưa con đến cơ sở y tế gần nhất, hoặc gọi cấp cứu 115 nếu khó đánh thức, khó thở hay co giật. Đừng chờ tin nhắn này.
-  > Mình **không gợi ý thuốc** trong trường hợp này. Dược sĩ trực đã được báo ca khẩn và sẽ gọi lại cho bạn trong vòng 2 phút để hỗ trợ trên đường đi.
-- **Người dùng thấy:** khung đỏ ở đầu câu trả lời (số 3), nút **Gọi 115** và nút **Cơ sở y tế gần nhất**. Có dòng "AI dựa vào": `li bì` (đỏ), `người dùng thuốc: Con`, `2 tuổi`, và `yêu cầu mua thuốc: tạm gác lại` (số 2). Không có thẻ sản phẩm nào.
+- **AI nói (nguyên văn):**
+  > **Bé đang li bì, gọi mãi mới mở mắt: đây là dấu hiệu cần đưa đi cấp cứu ngay.** Bạn gọi **115** hoặc đưa bé đến cơ sở y tế gần nhất, đừng chờ tin nhắn này. Nếu bé co giật, tím tái hoặc khó thở thì gọi 115 ngay.
+  > Mình **không gợi ý thuốc** lúc này. Dược sĩ trực đã được báo ca khẩn và sẽ gọi lại cho bạn trong vòng 2 phút để hỗ trợ trên đường đi.
+
+  Hai chi tiết trong câu này được thiết kế có chủ ý:
+  - **Điều kiện đã xảy ra thì không viết thành "nếu".** Bản đầu ghi "gọi 115 *nếu khó đánh thức*", nhưng khách đã viết "gọi mãi mới mở mắt", tức điều kiện đó đã đúng. Câu "nếu" bắt một người đang hoảng tự đánh giá lại tình huống, và cho họ lý do để chọn đường nhẹ hơn. Bản này gọi tên dấu hiệu bằng đúng chữ khách viết, rồi mới đưa lệnh. Chỉ giữ "nếu" cho dấu hiệu khách **chưa** nói (co giật, tím tái, khó thở).
+  - **Số "2 phút" không do model viết.** Nó lấy từ hàng chờ thật (xem "Lỗi mà sửa câu chữ không cứu được"). Khi không có dược sĩ trực, câu thứ hai đổi thành "Hiện chưa có dược sĩ rảnh, bạn đừng chờ mình, hãy đi ngay", vì lời hứa về người gọi lại không được đứng trước lời bảo đi khám.
+  - Không câu nào gọi tên bệnh: AI nói về **dấu hiệu**, không chẩn đoán (§1). Câu chữ lâm sàng này cần dược sĩ hoặc bác sĩ rà lại trước khi dùng thật.
+- **Người dùng thấy:** khung đỏ ở đầu câu trả lời (số 3), nút **Gọi 115** và nút **Cơ sở y tế gần nhất**. Có dòng "AI dựa vào": `li bì` (đỏ), `người dùng thuốc: Con`, `2 tuổi`, và `yêu cầu mua thuốc: tạm gác lại` (số 2). Không có thẻ sản phẩm nào. Chữ trong chip và chữ trong câu cảnh báo là **cùng một chữ khách viết**, nên khách thấy ngay AI đã đọc đúng.
 - **Làm gì tiếp:** gọi 115, mở cơ sở y tế gần nhất, hoặc để lại số cho dược sĩ gọi. Nếu khách vẫn đòi "cho mình mua hạ sốt thôi", AI nhắc lại lý do bằng chính chữ khách viết ("bé đang li bì") và vẫn không gửi sản phẩm. Nếu khách không làm gì, dược sĩ vẫn gọi lại, vì việc gọi lại không phụ thuộc vào khách.
+  - **Khách nói nhẹ đi giữa chừng** ("giờ bé tỉnh rồi, chơi bình thường"): cảnh báo **không** tự hạ xuống, và AI vẫn không gửi sản phẩm. Lý do: lời khách trong cùng cuộc chat không phải bằng chứng đủ để rút một cảnh báo cấp cứu; người hạ cảnh báo là dược sĩ sau khi gọi lại. Cái giá: một số ca báo thừa, khách mất vài phút (hiện thừa là loại sai rẻ, §4). *Đây là thiết kế; prototype chưa có nút cho nhánh này.*
 - **Ai được báo, sau bao lâu:** dược sĩ trực, **ngay lập tức**. Ca nhảy lên đầu hàng với nhãn **KHẨN · đã hiện cảnh báo đi khám**, hạn gọi lại 2:00, kèm câu gốc, người dùng thuốc, dấu hiệu, và việc AI đã làm (số 8). Quá 2 phút chưa gọi thì báo trưởng ca.
 - **Quyết định: dừng và chuyển người, nhưng cảnh báo đi khám trước, chuyển song song.**
   - *Đã loại "hỏi lại"* ("bé có khó thở không?", "bé bao nhiêu kg?"): mỗi câu hỏi là thêm một lượt chờ, và câu trả lời không đổi được kết luận (li bì ở trẻ 2 tuổi đã đủ để đi khám).
+  - *Đã loại "chỉ hiện cảnh báo, không báo dược sĩ"*: khách đã đọc cảnh báo vẫn có thể không làm gì, và khi đó không ai biết. Báo dược sĩ song song nghĩa là ca có người theo dõi dù khách im lặng, và dược sĩ là người bấm "báo nhầm" để sửa luật.
   - *Đã loại "trả lời kèm giới hạn"* (gợi ý hạ sốt kèm "nếu không đỡ thì đi khám"): vẫn là `goi_y_san_pham` cho trẻ nhỏ (rubric track ý 2), và câu "nếu không đỡ" cho phép khách chờ ở nhà.
   - *Đã loại "chỉ chuyển dược sĩ"*: đúng nguyên tắc chuyển người, nhưng đặt khách vào hàng chờ, đúng cái lát cắt muốn tránh ("ca nguy hiểm không nằm trong hàng chờ").
 - **Loại lỗi: lỗi hệ thống.** Nếu AI bỏ sót "li bì" thì đó là phân loại sai của chính hệ thống, khách đã nói đủ. Cách nói không đổ cho khách ("bạn nên nói rõ hơn"). Cách sửa: luật dấu hiệu nguy hiểm chạy trước model và không phụ thuộc model (danh sách `R.danger` trong prototype). Dược sĩ có nút **"Đánh dấu: báo nhầm"** để gom các ca báo thừa và sửa luật. Với dấu hiệu không có trong danh sách (ví dụ "bé nằm im, không chịu bú"), Claude thật chạy song song và chỉ được nâng ca lên khẩn, không được hạ một ca luật đã chặn (§5).
