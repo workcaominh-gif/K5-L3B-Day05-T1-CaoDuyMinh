@@ -50,7 +50,11 @@ The sender is often NOT the person who will take the medicine; identify that per
 Reply with JSON only, no prose:
 {"route": "...", "nguoi_dung_thuoc": "<who will take it, in Vietnamese, or 'chưa rõ'>",
  "bang_chung": ["<exact short quotes copied from the customer's words that justify the route>"],
- "chua_biet": ["<facts still unknown, in Vietnamese>"]}"""
+ "chua_biet": ["<facts still unknown, in Vietnamese>"],
+ "trich": {"nguoi_dung_thuoc": "<quote or null>", "tuoi": "<quote or null>", "mang_thai_cho_bu": "<quote or null>",
+           "thuoc_dang_dung": "<quote or null>", "benh_nen_di_ung": "<quote or null>", "bi_bao_lau": "<quote or null>",
+           "trieu_chung": "<quote or null>"}}
+Every value in "trich" MUST be a short exact quote copied from the customer's words (earlier or new messages), or null when the customer did not say it. Never infer or guess a value."""
 
 
 def triage(text, history):
@@ -81,6 +85,18 @@ def triage(text, history):
     words = (" ".join(history) + " " + text).lower()
     out["bang_chung"] = [q for q in out.get("bang_chung", []) if isinstance(q, str) and q.lower() in words][:4]
     out["chua_biet"] = [q for q in out.get("chua_biet", []) if isinstance(q, str)][:4]
+    # extracted screening fields: keep only exact quotes found in the customer's words; anything else becomes null
+    keys = ["nguoi_dung_thuoc", "tuoi", "mang_thai_cho_bu", "thuoc_dang_dung", "benh_nen_di_ung", "bi_bao_lau", "trieu_chung"]
+    raw_t = out.get("trich") if isinstance(out.get("trich"), dict) else {}
+    out["trich"], out["trich_bo"] = {}, []
+    for k in keys:
+        v = raw_t.get(k)
+        if isinstance(v, str) and v.strip() and v.strip().lower() in words:
+            out["trich"][k] = v.strip()
+        else:
+            out["trich"][k] = None
+            if isinstance(v, str) and v.strip() and v.strip().lower() not in ("null", "none"):
+                out["trich_bo"].append(f"{k}: {v.strip()}")
     out["model"] = data.get("model", MODEL)
     out["ms"] = int((time.time() - t0) * 1000)
     u = data.get("usage", {})
