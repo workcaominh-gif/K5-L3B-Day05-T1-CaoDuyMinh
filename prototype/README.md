@@ -24,8 +24,9 @@ Mở <http://localhost:8767> (hoặc `?k=K5` để vào thẳng một kịch b�
    - **Sau:** Thought là luật cứng đọc được gì và nhánh code nào chạy. Action `phan_loai_tin` là lời gọi Claude thật, Observation là kết quả phân loại. Các Action còn lại là tool đã gọi, Observation ghi mức tự chủ (tự làm / chờ duyệt / bị chặn). Ở ca khẩn, thứ tự là luật quyết định trước, Claude ghi thêm sau.
    - **Trước:** Action là đúng các tool model tự gọi, với tham số thật. Observation ghi rõ "KHÔNG ai duyệt", "KHÔNG hỏi khách". Thought để trống, vì prompt bán hàng không yêu cầu model nêu lý do.
 4. **Tool hỏi lại `hoi_lai_khach`:** khi thiếu thông tin, AI hỏi một câu kèm nút trả lời nhanh (ví dụ K1: Quận 1 / Quận 3 / Phú Nhuận). Tối đa 2 lần mỗi cuộc chat, không hỏi khi khẩn hoặc khách đã gắt.
-5. **Ca lạ:** gõ vào ô ở đầu trang, Enter.
-6. Khung **"Chỗ trong code vừa chạy"** dưới mỗi cột chỉ dòng `index.html` đã quyết định.
+5. **Số chú thích:** rê chuột lên số tròn màu cam bất kỳ để xem nó thể hiện nguyên tắc HAX/PAIR nào.
+6. **Ca lạ:** gõ vào ô ở đầu trang, Enter.
+7. Khung **"Chỗ trong code vừa chạy"** dưới mỗi cột chỉ dòng `index.html` đã quyết định.
 
 "Xem từng chế độ" (`?view=single`) mở một màn hình đầy đủ: bảng mức tự chủ, chú thích các số, và thêm chế độ A "hôm nay".
 
