@@ -141,6 +141,7 @@ mark.fab{background:var(--r);color:#fff;border-radius:4px;padding:0 4px}
 /* ---- trang tham chiếu (?view=single): chỉ còn các khung bên phải ---- */
 body.ref header .sub,body.ref header .cases,body.ref .phone,body.ref .foot{display:none}
 body.ref main{grid-template-columns:1fr;max-width:1100px}
+body.ref #legend{order:-1}
 /* ===== giao diện gọn: bỏ viền, chat dạng hộp xanh (khách) / xám (AI) ===== */
 body{background:#f7f8fa}
 header,.cmp-head{border-bottom:0;box-shadow:0 1px 0 rgba(0,0,0,.04)}
@@ -222,7 +223,7 @@ td,th{border-bottom:1px solid #eef0f2}
     <tr data-t="ban_thuoc_ke_don"><td><code>ban_thuoc_ke_don</code></td><td><span class="pill p-no">cấm</span></td><td>Không có nút; chỉ đường mang đơn ra nhà thuốc</td></tr>
    </table>
   </div>
-  <div class="panel">
+  <div class="panel" id="legend">
    <h2>Chú thích các số trên màn hình</h2>
    <ul class="ann">
     <li><span class="n">1</span><span><b>G1</b> và Luật AI 134/2025, Điều 11: khách biết mình đang nói với AI, và AI không phải dược sĩ.</span></li>
@@ -234,7 +235,7 @@ td,th{border-bottom:1px solid #eef0f2}
     <li><span class="n">7</span><span><b>G8</b> và mức "khách duyệt": lưu ghi chú sức khoẻ chỉ khi khách bấm; "Không lưu" là nút mặc định.</span></li>
     <li><span class="n">8</span><span>Đường chuyển người: dược sĩ nhận tóm tắt, ca khẩn nằm trên cùng và được giao việc gọi lại.</span></li>
     <li><span class="n">9</span><span><b>G15</b>: "Sai chỗ nào?" dưới mỗi câu AI.</span></li>
-    <li><span class="n">10</span><span><b>G2 / G11</b>: kết quả phân loại của Claude thật kèm câu trích. Claude chỉ được làm quyết định chặt hơn luật; trích dẫn không có trong tin khách sẽ bị server bỏ.</span></li>
+    <li><span class="n">10</span><span><b>G2 / G11</b>: Claude thật trích các ô sàng lọc từ tin khách (điền sẵn thẻ, đưa vào tóm tắt cho dược sĩ) và bắt dấu hiệu nguy hiểm luật bỏ sót. Claude chỉ được làm quyết định chặt hơn luật; giá trị nào không phải câu trích nguyên văn từ tin khách bị server bỏ.</span></li>
    </ul>
   </div>
  </aside>
