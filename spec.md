@@ -154,7 +154,7 @@ Một lỗi tương tự: AI **hứa** "dược sĩ sẽ gọi trong 2 phút" l�
 | Tool | Mức của nhóm | Sai thì ai chịu gì · đảo được không | Chờ người thì mất gì | Phương án đã loại |
 |---|---|---|---|---|
 | `khuyen_di_kham` | **tự làm**, kích hoạt bằng luật dấu hiệu nguy hiểm chạy trước model | Hiện thừa: khách mất vài phút đọc, và có thể đi khám thừa ("khách bỏ qua được"). Hiện thiếu: hại sức khoẻ, không đảo được (K4, K11). | Mất đúng phút quý nhất của ca cấp cứu: **chờ là sai**. | *Dược sĩ duyệt trước khi hiện*: loại vì đẩy K4 vào hàng chờ. |
-| `chuyen_duoc_si` | **tự làm** | Chuyển thừa: dược sĩ mất vài phút, khách chờ vài phút; "Được, tốn vài phút". | Không áp dụng: đây chính là đường về người. | *Khách xác nhận "bạn có muốn gặp dược sĩ?"*: loại vì thêm một bước ở K5, nơi khách đã gắt. |
+| `chuyen_duoc_si` | **tự làm, chỉ khi khớp lý do trong danh sách đóng** (xem "Tool khó xếp nhất") | Chuyển thừa: dược sĩ quá tải, hàng chờ dài, **ca khẩn chờ lâu hơn**, AI thành vô dụng. Chuyển thiếu: ca nguy cơ không gặp được người. Đảo lại được, tốn vài phút. | Không áp dụng: đây chính là đường về người. | *Tự làm không giới hạn*: AI chuyển hết. *Khách xác nhận*: thêm một bước ở K5, nơi khách đã gắt. *Cấm*: K3, K5, K10 bắt buộc có dược sĩ. |
 | `goi_y_san_pham`, tách thành: | | | | |
 | → `soan_goi_y` (nháp) | **tự làm** | Nháp sai: dược sĩ thấy và sửa; khách không thấy gì. | — | — |
 | → `gui_goi_y`: **thuốc** | **cần dược sĩ duyệt.** Người duyệt thấy câu gốc, kết quả sàng lọc, bản nháp; có nút Duyệt / Sửa / Tự trả lời. **Quá 5 phút: không tự gửi**; khách chọn chờ tiếp hoặc ra nhà thuốc, trưởng ca được báo. | Gửi sai cho người không được dùng: **không đảo được khi thuốc đã dùng**, người chịu là người uống thuốc, thường không phải người nhắn (K3, K5, K8). | Người lớn bình thường (K2) chờ thêm vài phút. | *Tự làm khi sàng lọc "sạch"*: loại vì sàng lọc dựa vào lời khách, và khách hay quên nói người uống là ai. *Cấm*: loại vì mất hẳn việc gợi ý cho K2, đúng việc của lát cắt. |
@@ -168,17 +168,31 @@ Một lỗi tương tự: AI **hứa** "dược sĩ sẽ gọi trong 2 phút" l�
 
 **Vai trò của Claude thật trong thiết kế:** Claude không viết câu gửi khách. Nó (1) **trích các ô sàng lọc** từ tin khách: ai dùng thuốc, tuổi, mang thai, thuốc đang dùng, bệnh nền, bị bao lâu. Kết quả điền sẵn thẻ sàng lọc (khách chỉ cần xác nhận, G9) và đi vào tóm tắt cho dược sĩ. Nó (2) **bắt dấu hiệu nguy hiểm mà luật từ khoá bỏ sót** ("bé nằm im, không chịu bú", "nói ngọng, méo miệng"). Mỗi giá trị Claude trích phải là câu nguyên văn trong tin khách; server bỏ mọi giá trị không tìm thấy, và ô đó ghi "chưa biết". Đây là cùng nguyên tắc chống bịa như với `tra_cuu_san_pham`.
 
-### Tool khó xếp nhất: `goi_y_san_pham` (gửi gợi ý thuốc)
+### Tool khó xếp nhất: `chuyen_duoc_si`
 
-Mức nào cũng có giá:
+Thoạt nhìn đây là tool dễ nhất: đảo lại được, chỉ tốn vài phút. Nhưng chính vì rẻ nên nó nguy hiểm theo hướng ngược lại. Nếu AI được chuyển tuỳ ý, cách "an toàn" nhất cho model luôn là chuyển, và khi đó:
 
-- **Tự làm**: nhanh cho K2, nhưng K5 sẽ "bán đại" được, và K3 dựa hoàn toàn vào việc AI bắt đúng chữ "bầu". Giá: không đảo được.
-- **Dược sĩ duyệt**: chặn được K3, K5, K8; giá là K2 chờ thêm vài phút, và nếu ca đêm ít dược sĩ thì có hàng chờ duyệt.
-- **Cấm**: an toàn nhất, nhưng lát cắt yêu cầu AI "tự trả lời và gợi ý sản phẩm", nên cấm thì tính năng không làm đúng việc của nó.
+- dược sĩ quá tải, hàng chờ dài ra, và **chính ca khẩn (K4, K11) phải chờ lâu hơn**;
+- AI không còn làm được việc gì: khách thường (K1, K2) cũng phải chờ người.
 
-_Ai từng chọn gì (điền sau khi nhóm thảo luận):_ _[thành viên 1: …]_ · _[thành viên 2: …]_ · _[thành viên 3: …]_
+**Ba phương án đã cân nhắc:**
 
-**Nhóm chốt:** tách tool. Phần **soạn** tự làm, phần **gửi thuốc** cần dược sĩ duyệt, phần **gửi sản phẩm không phải thuốc** tự làm có hoàn tác. Lý do: cái giá của "dược sĩ duyệt" (vài phút) là giá track tự nói là chấp nhận được ("chuyển sang dược sĩ ... mà thừa thì chỉ tốn vài phút"). Cái giá của "tự làm" (K5) thì không. Đổi lại, AI vẫn làm phần tốn công: hỏi sàng lọc, tóm tắt, soạn nháp. Nhờ vậy dược sĩ duyệt bằng một nút, thay vì tư vấn lại từ đầu.
+| Mức | Cái giá | Kịch bản cho thấy |
+|---|---|---|
+| Tự làm, không giới hạn | Chuyển hết → dược sĩ quá tải, ca khẩn chờ; AI vô dụng | K1, K2 bị đẩy cho dược sĩ dù AI tự trả lời được |
+| Cần duyệt | Vô lý: chờ một người duyệt để được chuyển cho người | K4: thêm một lượt chờ đúng lúc không được chờ |
+| Cấm | Khách không gặp được người khi cần | K3, K5, K10 bắt buộc phải có dược sĩ (rubric T1 ý 2) |
+
+_Ai từng chọn gì:_ Cao Duy Minh: "nếu để AI tự quyết thì nó chỉ làm mỗi việc chuyển dược sĩ" · _[thành viên 2: …]_ · _[thành viên 3: …]_
+
+**Nhóm chốt: tự làm, nhưng chỉ khi khớp một lý do trong danh sách đóng.** Danh sách: dấu hiệu nguy hiểm · người dùng thuốc dưới 12 tuổi · từ 65 tuổi · mang thai / cho con bú · bệnh nền / đang dùng thuốc khác · tự dùng thuốc ≥5 ngày không đỡ · khách không cho biết người dùng thuốc · khách tự yêu cầu gặp dược sĩ.
+
+- **Code chặn:** `route()` từ chối chuyển nếu không có lý do trong danh sách. AI phải tự xử lý tiếp (sàng lọc, tra cứu, soạn gợi ý). Claude muốn chuyển mà câu trích không khớp lý do nào thì cũng bị bỏ qua (prototype: Thought `noReason`).
+- **Nhìn thấy được:** mỗi ca chuyển ghi "Lý do chuyển (danh sách)" trên màn hình dược sĩ và trong Observation của khối ReAct.
+- **Đo được:** dược sĩ có nút "Đánh dấu: chuyển thừa". Tỉ lệ chuyển thừa cao thì sửa danh sách.
+- Khách luôn bấm được "gặp dược sĩ", nên lý do "khách yêu cầu" không bao giờ bị chặn.
+
+**Tool khó thứ hai: `goi_y_san_pham`.** Nhóm tách thành `soan_goi_y` (tự làm) và `gui_goi_y` (thuốc: dược sĩ duyệt; không phải thuốc: tự làm, có huỷ). Lý do: gửi sai cho người không được dùng là không đảo được, còn chờ duyệt chỉ mất vài phút.
 
 ### Thử mức đã đặt trên 3 kịch bản
 
@@ -256,7 +270,7 @@ Với nhóm ca cuối, khác biệt vẫn còn: ở cột Trước **không ai �
 
 Kết luận của nhóm: rủi ro không nằm ở chỗ model kém, mà ở chỗ **không có gì bảo đảm**. Cùng một model, khi đúng là nhờ huấn luyện an toàn của nhà cung cấp (đúng vì may theo nghĩa của guide). Khi bị prompt kinh doanh đẩy, nó vẫn bán (K5) và vẫn nói liều (K9). Thiết kế §4 biến những điều "thường đúng" thành "luôn đúng" bằng luật chạy trước và tool tách mức.
 
-Ảnh: `prototype/before-after-K4.png`, `before-after-K5.png`, `before-after-K9.png`.
+Ảnh: `prototype/before-after-K4.png`, `before-after-K5.png`, `before-after-K1.png`.
 
 **Quyết định: cách hiện độ chắc / bằng chứng**
 

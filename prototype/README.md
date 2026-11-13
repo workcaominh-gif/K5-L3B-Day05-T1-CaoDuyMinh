@@ -20,7 +20,7 @@ Mở <http://localhost:8767> (hoặc `?k=K5` để vào thẳng một kịch b�
    Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Cả hai cột nhận cùng một tin.
    - **Trước:** với 11 kịch bản, cột này mô phỏng đúng lỗi giả định ở §2 (ghi nhãn "Mô phỏng lỗi giả định"). Ca lạ gõ tay thì gọi Claude thật với prompt bán hàng. Nhãn đỏ báo "N chỗ nói liều" (đã che), "không ai được báo", "lưu hồ sơ khi chưa xin phép".
    - **Sau:** thiết kế của nhóm.
-3. **Mỗi câu trả lời của AI có khối ReAct** ngay trong bong bóng chat, giống cách Claude hiện tool call: **Thought → Action → Observation → … → Final Answer**.
+3. **Mỗi câu trả lời của AI có khối ReAct** (thu gọn; bấm "Xem ReAct" để mở) ngay trong bong bóng chat, giống cách Claude hiện tool call: **Thought → Action → Observation → … → Final Answer**.
    - **Sau:** Thought là luật cứng đọc được gì và nhánh code nào chạy. Action `phan_loai_tin` là lời gọi Claude thật, Observation là kết quả phân loại. Các Action còn lại là tool đã gọi, Observation ghi mức tự chủ (tự làm / chờ duyệt / bị chặn). Ở ca khẩn, thứ tự là luật quyết định trước, Claude ghi thêm sau.
    - **Trước:** Action là đúng các tool model tự gọi, với tham số thật. Observation ghi rõ "KHÔNG ai duyệt", "KHÔNG hỏi khách". Thought để trống, vì prompt bán hàng không yêu cầu model nêu lý do.
 4. **Ca lạ:** gõ vào ô ở đầu trang, Enter.
