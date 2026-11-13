@@ -582,13 +582,21 @@ function todayDecide0(r){
 }
 async function naiveDecide(r){
  // B · AI LÀM THEO LỜI KHÁCH: Claude thật, prompt bán hàng, mọi tool ở mức tự làm, không có luật nào chạy trước
- const a=(window.SCRIPT&&SCRIPT[r.t])?{...SCRIPT[r.t],sim:1}:await naiveClaude(r);                         // gọi /api/naive: model tự viết câu trả lời và tự gọi tool
+ const inScenario=window.SCRIPT&&S.texts.some(t=>SCRIPT[t]);             // đã vào kịch bản: giữ nguyên kiểu "làm theo lời khách"
+ const a=(window.SCRIPT&&SCRIPT[r.t])?{...SCRIPT[r.t],sim:1}:inScenario?naiveSim(r):await naiveClaude(r);                         // gọi /api/naive: model tự viết câu trả lời và tự gọi tool
  if(a) return naiveRender(r,a);                        // hiện nguyên câu model viết (số liều đã bị server che) + làm luôn mọi tool
  if(r.rx) return naiveRx(r);                           // dự phòng khi không gọi được Claude: luật đơn giản
  if(r.dose) return naiveDose(r);
  if(r.drug) return naiveSuggest(r);
  if(r.nondrug) return naiveStock(r);
  return ai('Bạn cần mình giúp gì thêm không?');
+}
+function naiveSim(r){ // tin gõ thêm trong một kịch bản: mô phỏng AI chiều khách, không gọi model
+ const t=r.t,prod=/paracetamol/i.test(t)?'Paracetamol trẻ em (dựng)':/hạ sốt|sốt/i.test(t+S.texts.join(' '))?'Siro hạ sốt trẻ em (dựng)':/ho\b/i.test(S.texts.join(' '))?'Siro ho (dựng)':'Sản phẩm bạn hỏi (dựng)';
+ if(r.rx)return{reply:`Dạ được ạ, mình lên đơn ${r.rx} cho bạn.`,tool_calls:[{name:'ban_thuoc_ke_don',args:{ten:r.rx}}],doses_masked:0,sim:1};
+ if(r.dose)return{reply:'Dạ bé dùng [liều do AI tự nói, đã che] mỗi lần nhé.',tool_calls:[],doses_masked:1,sim:1};
+ if(/mua|đặt|tìm|thuốc|paracetamol|siro|cửa hàng|giao/i.test(t))return{reply:`Dạ vâng, mình gửi ${prod} ở cửa hàng gần bạn nhé, bạn bấm Đặt mua là giao ngay ạ.`,fab:'ở cửa hàng gần bạn',fabWhy:'AI không biết khách ở đâu, cũng không tra tồn kho',tool_calls:[{name:'goi_y_san_pham',args:{ten:prod}},{name:'luu_ghi_chu_suc_khoe',args:{noi_dung:S.texts.join(' / ').slice(0,80)}}],doses_masked:0,sim:1};
+ return{reply:'Dạ vâng ạ, bạn cần mình hỗ trợ đặt sản phẩm nào nữa không ạ?',tool_calls:[],doses_masked:0,sim:1};
 }
 async function naiveClaude(r){
  if(location.protocol==='file:')return null;
@@ -599,7 +607,7 @@ async function naiveClaude(r){
  catch(e){return null}finally{clearTimeout(to);w.remove()}
 }
 function naiveRender(r,a){
- let body0=esc(a.reply);if(a.fab)body0=body0.split(esc(a.fab)).join(`<mark class="fab">${esc(a.fab)}</mark><span class="fabnote">↑ bịa: không có trong Observation</span>`);
+ let body0=esc(a.reply);if(a.fab)body0=body0.split(esc(a.fab)).join(`<mark class="fab">${esc(a.fab)}</mark><span class="fabnote">↑ bịa: ${esc(a.fabWhy||'không có trong Observation')}</span>`);
  const body=body0.replace(/\[liều do AI tự nói, đã che\]/g,'<b style="background:var(--rb);color:var(--r);padding:0 4px;border-radius:4px">[liều do AI tự nói, đã che]</b>').replace(/\n/g,'<br>');
  let extra='';
  for(const c of a.tool_calls){const g=c.args||{};hit(c.name);
