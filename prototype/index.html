@@ -16,6 +16,7 @@ main{display:grid;grid-template-columns:410px 1fr;gap:22px;padding:18px 24px 24p
 .phone{background:#fff;border:1px solid var(--line);border-radius:28px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);display:flex;flex-direction:column;min-height:720px}
 .bar{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--mut);padding:2px 6px 8px;border-bottom:1px solid var(--line);gap:6px}
 .bar b{color:var(--ink);font-size:14px}
+.ailabel.off{background:var(--ab);color:var(--a)}
 .ailabel{font-size:11.5px;background:var(--bb);color:var(--b);border-radius:999px;padding:2px 8px;font-weight:600;white-space:nowrap}
 .chat{display:flex;flex-direction:column;gap:9px;padding:10px 4px;flex:1;overflow-y:auto;max-height:600px}
 .me{align-self:flex-end;background:var(--b);color:#fff;padding:8px 12px;border-radius:14px 14px 2px 14px;max-width:86%}
@@ -66,7 +67,7 @@ tr.hit td{background:#fffaf0}
 <body>
 <header>
  <h1>Hỏi dược sĩ · trợ lý AI trả lời đầu tiên: tự trả lời, hỏi sàng lọc, chuyển dược sĩ hay khuyên đi khám</h1>
- <div class="sub">Prototype T1 · Nhóm CaoDuyMinh. Dữ liệu dựng, tên sản phẩm dựng. Không có model thật: quyết định do luật sàng lọc trong file này chạy, để mọi ca bấm ra cùng một kết quả khi demo.</div>
+ <div class="sub">Prototype T1 · Nhóm CaoDuyMinh. Dữ liệu dựng, tên sản phẩm dựng. Mỗi tin khách được <b>Claude thật</b> phân loại qua <code>server.py</code> (key nằm ở server, không ở trang); luật cứng chạy song song và lấy kết quả thận trọng hơn. Không có server thì trang tự dùng luật.</div>
  <div class="cases"><span class="sub">Ca:</span>
   <button data-case="1">① Bé 2 tuổi sốt, li bì (demo bắt buộc)</button>
   <button data-case="2">② Mẹ 75 tuổi ho, khách gắt</button>
@@ -74,6 +75,7 @@ tr.hit td{background:#fffaf0}
   <button data-case="4">④ Đau họng 2 ngày (người lớn)</button>
   <button data-case="0">Ca lạ: tự gõ</button>
   <label><input type="checkbox" id="ann" checked> Hiện số chú thích</label>
+  <label><input type="checkbox" id="useai" checked> Gọi Claude thật</label> <span id="aist" class="ailabel">Claude thật: chưa gọi</span>
  </div>
 </header>
 <main id="root">
@@ -112,11 +114,12 @@ tr.hit td{background:#fffaf0}
     <li><span class="n">7</span><span><b>G8</b> và mức "khách duyệt": lưu ghi chú sức khoẻ chỉ khi khách bấm; "Không lưu" là nút mặc định.</span></li>
     <li><span class="n">8</span><span>Đường chuyển người: dược sĩ nhận tóm tắt, ca khẩn nằm trên cùng và được giao việc gọi lại.</span></li>
     <li><span class="n">9</span><span><b>G15</b>: "Sai chỗ nào?" dưới mỗi câu AI.</span></li>
+    <li><span class="n">10</span><span><b>G2 / G11</b>: kết quả phân loại của Claude thật kèm câu trích. Claude chỉ được làm quyết định chặt hơn luật; trích dẫn không có trong tin khách sẽ bị server bỏ.</span></li>
    </ul>
   </div>
  </aside>
 </main>
-<div class="foot">Mọi tên người, sản phẩm và số liệu là dữ liệu dựng cho lab. Prototype không gửi dữ liệu đi đâu và không gọi API nào.</div>
+<div class="foot">Mọi tên người, sản phẩm và số liệu là dữ liệu dựng cho lab. Khi chạy qua <code>server.py</code>, tin nhắn dựng được gửi tới Anthropic API để phân loại; mỗi lần gọi ghi vào <code>ai-log.jsonl</code> (không có key).</div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -172,9 +175,33 @@ function act(id,i){const k=tickets.find(x=>x.id===id);const a=k.actions[i];k.don
 setInterval(()=>document.querySelectorAll('.timer[data-t0]').forEach(e=>{const s=Math.floor((Date.now()-+e.dataset.t0)/1000);e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}),1000);
 
 // ---------- luồng chính ----------
-function onMsg(t){
- me(t);const r=read(t);Object.assign(S.seen,Object.fromEntries(Object.entries(r).filter(([k,v])=>v&&k!=='t')));S.texts.push(t);
- setTimeout(()=>decide(r),350);
+async function callAI(t,hist){
+ if(!S.useAI||location.protocol==='file:')return null;
+ const c=new AbortController();const to=setTimeout(()=>c.abort(),12000);
+ try{const res=await fetch('/api/triage',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:t,history:hist}),signal:c.signal});
+  const j=await res.json();if(!res.ok||j.error)throw new Error(j.error||res.status);aiStatus('ok',j.model);return j}
+ catch(e){aiStatus('off',String(e.message||e));return null}finally{clearTimeout(to)}
+}
+function aiStatus(k,m){const e=$('#aist');if(!e)return;e.className='ailabel'+(k==='ok'?'':' off');e.textContent=k==='ok'?'Claude thật: đang chạy ('+m+')':'Claude thật: không gọi được, dùng luật dự phòng'}
+const RN={khan:'khẩn: đi khám ngay',ke_don:'thuốc kê đơn',hoi_lieu:'hỏi liều',chuyen_duoc_si:'chuyển dược sĩ',sang_loc:'cần sàng lọc',khong_phai_thuoc:'không phải thuốc',khac:'khác'};
+async function onMsg(t){
+ me(t);const r=read(t);Object.assign(S.seen,Object.fromEntries(Object.entries(r).filter(([k,v])=>v&&k!=='t')));const hist=S.texts.slice();S.texts.push(t);
+ // dấu hiệu nguy hiểm theo luật cứng: trả lời NGAY, không chờ Claude
+ const fast=!!r.danger;let n0=chat.children.length;if(fast)decide(r);
+ const wait=!fast&&S.useAI&&location.protocol!=='file:'?add('sys','Claude đang đọc tin…'):null;
+ const a=await callAI(t,hist);if(wait)wait.remove();
+ // Claude chỉ được làm quyết định CHẶT hơn luật, không bao giờ nới ra
+ if(a&&!fast){r.ai=a;const q=a.bang_chung&&a.bang_chung[0];
+  if(a.route==='khan'&&!r.danger)r.danger=q||'dấu hiệu nguy hiểm';
+  if(a.route==='ke_don'&&!r.rx&&!r.danger)r.rx=q||'thuốc kê đơn';
+  if(a.route==='hoi_lieu'&&!r.dose)r.dose=q||'hỏi liều';
+  if(a.route==='chuyen_duoc_si')r.forceRoute=true;}
+ if(!fast){n0=chat.children.length;decide(r);}
+ const first=[...chat.children].slice(n0).find(x=>x.classList.contains('ai'));
+ if(first){const d=document.createElement('div');d.className='ev';
+  d.innerHTML=a?`<span class="n">10</span><b>Claude (AI thật)</b> phân loại: <span class="chip ${a.route==='khan'?'red':'amb'}">${esc(RN[a.route]||a.route)}</span> · người dùng thuốc: ${esc(a.nguoi_dung_thuoc||'chưa rõ')}${(a.bang_chung||[]).map(q=>` <span class="chip">"${esc(q)}"</span>`).join('')}${(a.chua_biet||[]).map(q=>` <span class="chip unk">${esc(q)}</span>`).join('')}<br><small>Claude chỉ phân loại; câu chữ gửi khách là mẫu cố định. Luật cứng chạy song song, lấy kết quả thận trọng hơn.</small>`
+   :`<small>Không gọi được Claude: dùng luật dự phòng trong trang.</small>`;
+  first.insertBefore(d,first.querySelector('.fb'))}
 }
 function decide(r){
  // 1. dấu hiệu nguy hiểm: luôn trước, mọi thứ khác dừng
@@ -185,6 +212,8 @@ function decide(r){
  if(r.dose) return noDose(r);
  // 4. khách gắt khi đang sàng lọc: không hỏi lại, chuyển người với cái đã biết
  if(S.inScreen && (r.angry||r.age)) return routeFromAngry(r);
+ // 4b. Claude thấy nhóm nguy cơ mà luật không bắt được: chuyển dược sĩ
+ if(r.forceRoute && !r.danger){ if(r.nondrug) nondrug(r,true); return route(r,[['amb','Claude: người dùng thuốc '+(r.ai.nguoi_dung_thuoc||'chưa rõ')],...(r.ai.bang_chung||[]).map(q=>['amb',q])],(r.nondrug?'<b>Việc 2: thuốc.</b> ':'')+'Người sẽ dùng thuốc thuộc nhóm cần dược sĩ tư vấn trực tiếp.'); }
  // 5. nhóm nguy cơ hoặc dùng thuốc lâu không đỡ: chuyển dược sĩ
  const risk=riskOf(r);
  if((r.drug||S.inScreen) && risk.length && definite(r)){ if(r.nondrug) nondrug(r,true); return route(r,risk,(r.nondrug?'<b>Việc 2: thuốc.</b> ':'')+'Người sẽ dùng thuốc thuộc nhóm cần dược sĩ tư vấn trực tiếp.');}
@@ -310,7 +339,7 @@ const CASES={
  4:'Họng mình đau rát 2 ngày nay, có thuốc gì không?'
 };
 function start(c){
- S={case:c,seen:{},texts:[],inScreen:false};tickets=[];renderQ();chat.innerHTML='';quick.innerHTML='';
+ S={case:c,seen:{},texts:[],inScreen:false,useAI:$('#useai').checked};tickets=[];renderQ();chat.innerHTML='';quick.innerHTML='';
  document.querySelectorAll('#tools tr').forEach(x=>x.classList.remove('hit'));
  document.querySelectorAll('.cases button').forEach(b=>b.classList.toggle('on',+b.dataset.case===c));
  add('sys','Bạn đang chat với <b>trợ lý AI</b> của Pharmacity. Câu chuyên môn sẽ được chuyển cho dược sĩ.');
@@ -320,10 +349,12 @@ function start(c){
 }
 document.querySelectorAll('.cases button').forEach(b=>b.onclick=()=>start(+b.dataset.case));
 $('#compose').onsubmit=e=>{e.preventDefault();const v=$('#inp').value.trim();if(!v)return;$('#inp').value='';quick.innerHTML='';onMsg(v)};
+$('#useai').onchange=e=>{S.useAI=e.target.checked};
 $('#ann').onchange=e=>document.body.classList.toggle('hide-n',!e.target.checked);
 // ?case=1&auto=1 → tự bấm tới cuối, dùng để chụp ảnh
 const q=new URLSearchParams(location.search);start(+(q.get('case')||1));
-if(q.get('auto')){const c=+(q.get('case')||1);setTimeout(()=>{quick.querySelector('button')?.click();
+if(q.get('q')){setTimeout(()=>{quick.innerHTML='';onMsg(q.get('q'))},300)}
+else if(q.get('auto')){const c=+(q.get('case')||1);setTimeout(()=>{quick.querySelector('button')?.click();
  setTimeout(()=>{if(c===2)quick.querySelector('button')?.click();if(c===4)quick.querySelector('button')?.click();},700);
  setTimeout(()=>{if(c===4){const b=[...document.querySelectorAll('.ticket .btn.pri')][0];b&&b.click()}},1500);
 },300)}

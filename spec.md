@@ -167,11 +167,13 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 ## §5. Prototype
 
 - **File:** [`prototype/index.html`](prototype/index.html). Một file HTML tự viết (có coding agent hỗ trợ), mở trực tiếp hoặc chạy `python3 -m http.server`. Hướng dẫn bấm ở [`prototype/README.md`](prototype/README.md).
-- **Phần mock:** quyết định do bộ luật sàng lọc trong file chạy (danh sách dấu hiệu nguy hiểm, nhóm nguy cơ, thuốc kê đơn, hỏi liều), không có model. Màn hình dược sĩ, đồng hồ, bản đồ và tên sản phẩm là dựng. **Không có lời gọi AI thật.**
+- **Lời gọi AI thật (bonus):** mỗi tin khách được gửi tới **Claude Haiku 5.5** qua `prototype/server.py`. Claude chỉ **phân loại** tin vào một trong 7 nhóm (khẩn / kê đơn / hỏi liều / chuyển dược sĩ / sàng lọc / không phải thuốc / khác), nói ai là người dùng thuốc, và trích chữ khách làm bằng chứng. Log 13 lần gọi thật nằm ở `prototype/ai-log.jsonl`; cả 13 ra đúng đường. Key nằm trong `.env` (đã `.gitignore`), chỉ server đọc, không có trong code nộp.
+- **Vì sao Claude chỉ phân loại, không trả lời khách:** câu AI nói ở §3 là câu đã duyệt. Để model tự viết câu gửi khách thì mất khả năng hứa "không bao giờ nói liều" (K9). Claude và bộ luật cứng chạy **song song**, và trang lấy kết quả **thận trọng hơn**: Claude được nâng một ca lên khẩn hoặc chuyển dược sĩ, không được hạ một ca luật đã chặn. Câu trích không có trong tin khách thì server bỏ, để chip "bằng chứng" không thể bịa.
+- **Phần mock:** màn hình dược sĩ, đồng hồ, bản đồ và tên sản phẩm là dựng. Không có server thì trang tự dùng luật dự phòng, và nhãn trên đầu trang báo điều đó.
 - **Hai màn hình:** trái là khung chat Zalo của khách; phải là **màn hình dược sĩ trực** nhận ca chuyển kèm tóm tắt (bonus của track), cùng bảng mức tự chủ (dòng nào vừa được dùng thì tô vàng).
 - **Ca lạ:** ô "Ca lạ: tự gõ" chạy cùng bộ luật, nên mọi câu TA đưa đều ra một trong năm đường: khẩn / kê đơn / hỏi liều / nhóm nguy cơ → dược sĩ / sàng lọc.
 
-**Ảnh có đánh số:** `prototype/screen-1.png` (ca K4) và `prototype/screen-4.png` (ca K2 sau khi dược sĩ duyệt).
+**Ảnh có đánh số:** `prototype/screen-1.png` (ca K4), `prototype/screen-claude.png` (ca lạ "bé nằm im, không chịu bú": Claude bắt được dấu hiệu mà luật bỏ sót), `prototype/screen-4.png` (ca K2 sau khi dược sĩ duyệt).
 
 | Số | Thể hiện gì | Nguyên tắc | Mức tự chủ |
 |---|---|---|---|
@@ -184,6 +186,7 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 | 7 | "Lưu ghi chú này?", trích đúng câu; nút mặc định "Không lưu" | G8 | `luu_ghi_chu_suc_khoe` **khách duyệt** |
 | 8 | Màn hình dược sĩ: nhãn KHẨN, hạn gọi lại, tóm tắt, Duyệt / Sửa / Tự trả lời / Báo nhầm | PAIR Errors (đường về người) | `chuyen_duoc_si` **tự làm** |
 | 9 | "Sai chỗ nào?" dưới mỗi câu AI, với 3 lựa chọn cụ thể | G15 | — |
+| 10 | Kết quả phân loại của **Claude thật**: nhóm, người dùng thuốc, câu trích, điều chưa biết; dòng nhỏ "Claude chỉ phân loại…" | G2, G11 | Claude chỉ được làm quyết định chặt hơn |
 | — | Thuốc kê đơn: câu trả lời không có nút mua, chỉ có "Hỏi dược sĩ về đơn của tôi" (gõ "Augmentin" ở ca lạ) | G1 | `ban_thuoc_ke_don` **cấm** |
 
 **Quyết định: cách hiện độ chắc / bằng chứng**
@@ -209,7 +212,8 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 
 **Lỗi còn lại**
 
-- Luật nguy hiểm là **danh sách từ khoá**. Câu như "bé cứ nằm im, không chịu bú" (dấu hiệu nguy hiểm ở trẻ nhỏ) chưa có trong danh sách. Ca này vẫn được chuyển dược sĩ vì "bé" là nhóm nguy cơ, nhưng đi vào **hàng chờ thường**, không phải khẩn. Cách sửa: danh sách do dược sĩ duy trì, dựa trên các ca bị bấm "báo nhầm" hoặc "bỏ sót triệu chứng".
+- Luật nguy hiểm là **danh sách từ khoá**. Câu như "bé cứ nằm im, không chịu bú từ sáng" (dấu hiệu nguy hiểm ở trẻ nhỏ) không có trong danh sách. Khi có Claude thật, ca này **được bắt** và nâng lên khẩn (`screen-claude.png`, log dòng cuối). Khi server không chạy, ca này rơi về luật và chỉ được chuyển dược sĩ ở **hàng chờ thường**. Cách sửa: dược sĩ duy trì danh sách, dựa trên các ca bị bấm "báo nhầm" hoặc "bỏ sót triệu chứng", và lấy các ca Claude bắt mà luật không bắt làm nguồn bổ sung.
+- Claude thêm khoảng 2 giây cho mỗi tin (log: 1,6–2,5 giây). Vì vậy khi luật cứng đã thấy dấu hiệu nguy hiểm, khung đỏ hiện **ngay** và kết quả Claude gắn vào sau. Chỉ ca luật **không** bắt được mới chờ Claude; đó là ca bị chậm thêm khoảng 2 giây.
 - Ở K5, nếu khách nói "mẹ mình" mà không nói tuổi và **không** gắt, AI vẫn hỏi thẻ sàng lọc. Đúng, nhưng tốn một lượt.
 
 ---

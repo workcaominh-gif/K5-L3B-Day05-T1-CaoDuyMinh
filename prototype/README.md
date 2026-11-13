@@ -1,10 +1,15 @@
 # Prototype · T1 Y tế · Hỏi dược sĩ
 
-- **File:** [`index.html`](index.html). Một file HTML, không backend, không đăng nhập, không gọi API.
-- **Chạy:** mở trực tiếp `index.html`, hoặc `python3 -m http.server 8767` trong thư mục này rồi vào <http://localhost:8767>.
+- **File:** [`index.html`](index.html) (giao diện) và [`server.py`](server.py) (server nhỏ, chỉ để giữ key và gọi Claude; không đăng nhập, không cơ sở dữ liệu).
+- **Chạy có Claude thật:** tạo `.env` ở gốc repo theo `.env.example` (`ANTHROPIC_API_KEY=...`; file này đã nằm trong `.gitignore`), rồi chạy `python3 server.py` trong thư mục này và vào <http://localhost:8767>.
+- **Chạy không có key:** mở thẳng `index.html`. Trang tự dùng luật dự phòng, nhãn trên đầu báo "không gọi được".
 - **Công cụ:** HTML/CSS/JS viết tay, có coding agent (Claude Code) hỗ trợ.
-- **Phần mock:** quyết định của trợ lý do một bộ luật sàng lọc trong file chạy, không phải model, để mỗi lần demo bấm ra cùng một kết quả. Màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
-- **Lời gọi AI thật:** không có.
+- **Lời gọi AI thật (bonus):** mỗi tin khách được gửi tới **Claude Haiku 5.5** qua `server.py` để **phân loại** (khẩn / kê đơn / hỏi liều / chuyển dược sĩ / sàng lọc / không phải thuốc) và trích câu làm bằng chứng. Key chỉ nằm ở server, không bao giờ xuống trình duyệt và không có trong repo.
+  - Claude **chỉ được làm quyết định chặt hơn** bộ luật cứng trong trang, không bao giờ nới ra.
+  - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
+  - Câu trích nào không có trong tin của khách thì server bỏ đi.
+  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (13 lần gọi, tin dựng, không có key).
+- **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
 
 ## Bấm qua ca khó
 
@@ -18,6 +23,7 @@
 | Ảnh | Ca |
 |---|---|
 | ![ca 1](screen-1.png) | `screen-1.png`: ca ①, bé 2 tuổi li bì. Thấy các số 1, 2, 3, 8, 9 |
+| ![claude](screen-claude.png) | `screen-claude.png`: ca lạ "bé nằm im, không chịu bú". Luật từ khoá **không** bắt được, Claude thật bắt được và nâng lên khẩn (số 10) |
 | ![ca 4](screen-4.png) | `screen-4.png`: ca ④, sau khi dược sĩ duyệt. Thấy các số 1, 2, 6 (nút đặt), 7, 8, 9 |
 
 Số 4 (thẻ sàng lọc) và số 5 (đang chờ duyệt) hiện khi bấm ca ② hoặc ④ trên prototype. Ý nghĩa từng số nằm ở bảng chú thích bên phải màn hình và ở `spec.md` §5.
