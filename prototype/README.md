@@ -8,8 +8,30 @@
   - Claude **chỉ được làm quyết định chặt hơn** bộ luật cứng trong trang, không bao giờ nới ra.
   - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
   - Câu trích nào không có trong tin của khách thì server bỏ đi.
-  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (13 lần gọi, tin dựng, không có key).
+  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (21 lần gọi, tin dựng, không có key).
 - **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
+
+## So sánh trước / sau trên cùng một trang
+
+Hàng nút **"So sánh trước / sau"** ở đầu trang chạy lại **cùng một ca** theo ba cách:
+
+| Chế độ | Là gì | Ca ① bé li bì ra sao |
+|---|---|---|
+| **A · Hôm nay** | Sản phẩm thật hôm nay: AI chỉ trả lời giá, khuyến mãi; câu chuyên môn vào một hàng chờ chung | "Vui lòng chờ", vị trí 7; dược sĩ nhận ca "thường", không có tóm tắt |
+| **B · AI làm theo lời khách** | Tích hợp sâu nhưng mọi tool ở mức tự làm, không có luật chạy trước | Thẻ "Hạ sốt trẻ em" + Đặt mua; tự lưu hồ sơ sức khoẻ |
+| **C · Thiết kế của nhóm** | Spec §3–§4 | Khung đỏ đi khám / 115 ngay, dược sĩ nhận ca KHẨN |
+
+Khung **"Chỗ trong code vừa chạy"** (trên cùng bên phải) hiện đúng nhánh code vừa chạy cho tin đó, kèm số dòng `index.html:NNN` đọc từ chính file đang chạy. Đỏ là cách đã loại (A, B), xanh là thiết kế của nhóm (C).
+
+Ảnh so sánh: `compare-today.png` (A) · `compare-naive.png` (B) · `compare-ours.png` (C).
+
+## Kịch bản demo 4 phút
+
+1. **(30") Lát cắt:** đọc câu lát cắt; chỉ nhãn số 1.
+2. **(60") Ca ① ở chế độ A, rồi B, rồi C:** cùng một tin. A: khách bé li bì nằm hàng chờ vị trí 7. B: AI bán hạ sốt. C: khung đỏ, 115, ca KHẨN bên dược sĩ. Mỗi lần đổi chế độ, chỉ khung code: dòng vàng là chỗ khác nhau.
+3. **(60") Ca ② ở chế độ C:** khách gắt, AI không hỏi lại, chuyển dược sĩ. Chỉ dòng "Claude (AI thật)" (số 10) và nhánh code `routeFromAngry`.
+4. **(40") Mức tự chủ:** ca ④, gợi ý thuốc nằm ở "chờ dược sĩ duyệt" (số 5). Trả lời câu "sai thì ai mất gì".
+5. **(50") Ca lạ:** chọn "Ca lạ: tự gõ", gõ câu TA đưa, đọc khung code để nói nhánh nào chạy và vì sao.
 
 ## Bấm qua ca khó
 

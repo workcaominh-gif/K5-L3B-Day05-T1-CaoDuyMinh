@@ -167,7 +167,7 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 ## §5. Prototype
 
 - **File:** [`prototype/index.html`](prototype/index.html). Một file HTML tự viết (có coding agent hỗ trợ), mở trực tiếp hoặc chạy `python3 -m http.server`. Hướng dẫn bấm ở [`prototype/README.md`](prototype/README.md).
-- **Lời gọi AI thật (bonus):** mỗi tin khách được gửi tới **Claude Haiku 5.5** qua `prototype/server.py`. Claude chỉ **phân loại** tin vào một trong 7 nhóm (khẩn / kê đơn / hỏi liều / chuyển dược sĩ / sàng lọc / không phải thuốc / khác), nói ai là người dùng thuốc, và trích chữ khách làm bằng chứng. Log 13 lần gọi thật nằm ở `prototype/ai-log.jsonl`; cả 13 ra đúng đường. Key nằm trong `.env` (đã `.gitignore`), chỉ server đọc, không có trong code nộp.
+- **Lời gọi AI thật (bonus):** mỗi tin khách được gửi tới **Claude Haiku 5.5** qua `prototype/server.py`. Claude chỉ **phân loại** tin vào một trong 7 nhóm (khẩn / kê đơn / hỏi liều / chuyển dược sĩ / sàng lọc / không phải thuốc / khác), nói ai là người dùng thuốc, và trích chữ khách làm bằng chứng. Log 21 lần gọi thật nằm ở `prototype/ai-log.jsonl`; cả 21 ra đúng đường. Key nằm trong `.env` (đã `.gitignore`), chỉ server đọc, không có trong code nộp.
 - **Vì sao Claude chỉ phân loại, không trả lời khách:** câu AI nói ở §3 là câu đã duyệt. Để model tự viết câu gửi khách thì mất khả năng hứa "không bao giờ nói liều" (K9). Claude và bộ luật cứng chạy **song song**, và trang lấy kết quả **thận trọng hơn**: Claude được nâng một ca lên khẩn hoặc chuyển dược sĩ, không được hạ một ca luật đã chặn. Câu trích không có trong tin khách thì server bỏ, để chip "bằng chứng" không thể bịa.
 - **Phần mock:** màn hình dược sĩ, đồng hồ, bản đồ và tên sản phẩm là dựng. Không có server thì trang tự dùng luật dự phòng, và nhãn trên đầu trang báo điều đó.
 - **Hai màn hình:** trái là khung chat Zalo của khách; phải là **màn hình dược sĩ trực** nhận ca chuyển kèm tóm tắt (bonus của track), cùng bảng mức tự chủ (dòng nào vừa được dùng thì tô vàng).
@@ -188,6 +188,14 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 | 9 | "Sai chỗ nào?" dưới mỗi câu AI, với 3 lựa chọn cụ thể | G15 | — |
 | 10 | Kết quả phân loại của **Claude thật**: nhóm, người dùng thuốc, câu trích, điều chưa biết; dòng nhỏ "Claude chỉ phân loại…" | G2, G11 | Claude chỉ được làm quyết định chặt hơn |
 | — | Thuốc kê đơn: câu trả lời không có nút mua, chỉ có "Hỏi dược sĩ về đơn của tôi" (gõ "Augmentin" ở ca lạ) | G1 | `ban_thuoc_ke_don` **cấm** |
+
+**So sánh trước / sau ngay trên prototype.** Hàng nút "So sánh trước / sau" chạy lại cùng một ca theo hai cách đã loại và cách của nhóm:
+
+- **A · Hôm nay:** câu chuyên môn vào một hàng chờ chung. Đây là mục "Sản phẩm thật hôm nay", với hai chỗ "chưa nói rõ" (dấu hiệu chuyển, khách thấy gì) được dựng theo cách đơn giản nhất.
+- **B · AI làm theo lời khách:** mọi tool ở mức tự làm.
+- **C · Thiết kế của nhóm.**
+
+Khung "Chỗ trong code vừa chạy" hiện nhánh code và số dòng `index.html:NNN` cho từng tin. Với ca K4: A để khách ở vị trí 7 trong hàng chờ, B gửi thẻ "Hạ sốt trẻ em", C hiện khung đỏ và báo dược sĩ ca KHẨN (`prototype/compare-*.png`). Đây là bằng chứng cho phần "phương án đã loại" ở §3 và §4, nhìn thấy được thay vì chỉ viết ra.
 
 **Quyết định: cách hiện độ chắc / bằng chứng**
 
