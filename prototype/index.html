@@ -229,7 +229,25 @@ function setQuick(arr){quick.innerHTML='';arr.forEach(([lbl,fn])=>{const b=docum
 // ---------- dược sĩ ----------
 function ticket(o){
  o.id=tickets.length+1;o.t0=Date.now();tickets.unshift(o);tickets.sort((a,b)=>(b.urgent?1:0)-(a.urgent?1:0));renderQ();hit('chuyen_duoc_si');
+ S.handoff=o.id;closeScreen();return o;
 }
+// Sau khi đã chuyển dược sĩ: tin của khách đi thẳng vào ca, trợ lý AI không chen vào.
+// Chỉ luật dấu hiệu nguy hiểm vẫn chạy (xem decide()).
+function toPharmacist(t){
+ const k=tickets.find(x=>x.id===S.handoff);if(!k)return;
+ k.rows.push(['Khách nhắn thêm','<b>"'+esc(t)+'"</b>']);
+ sys(k.accepted?'Tin đã gửi thẳng cho dược sĩ. Trợ lý AI không trả lời trong lúc dược sĩ giữ cuộc chat.':'Đã thêm vào ca đang chờ. Dược sĩ đọc khi nhận ca; bạn không phải kể lại.');
+ if(k.accepted){k.done=null;k.actions=k.elder&&R.chronic.test(t)?[['Gợi ý sản phẩm (dược sĩ chọn)',()=>elderAdvice(k,t),'Đã gợi ý'],['Khuyên đi khám',()=>add('ph','<div class="who">Dược sĩ Lan (dựng)</div>Với bác, mình khuyên đưa bác đi khám để bác sĩ xem cùng thuốc huyết áp đang dùng. Mình không gợi ý thuốc qua chat cho trường hợp này.'),'Đã khuyên khám']]:[['Trả lời khách',()=>add('ph','<div class="who">Dược sĩ Lan (dựng)</div>Mình đã đọc, mình trả lời bạn ngay đây.'),'Đang tư vấn']]}
+ renderQ();
+}
+function elderAdvice(k,t){
+ hit('gui_goi_y_thuoc');
+ add('ph',`<div class="who">Dược sĩ Lan (dựng)</div>Cảm ơn bạn. Mình đã xem cùng thuốc bác đang dùng và chọn loại phù hợp hơn cho người cao tuổi. Nếu bác ho quá 1 tuần, sốt, khó thở hay ho ra máu thì đưa bác đi khám nhé.
+  <div class="prod"><div class="img">dựng</div><div style="flex:1"><b>Siro ho Sản phẩm C (dựng)</b><br><small><span class="tag ok">Dược sĩ Lan đã chọn</span> Dùng theo nhãn; dược sĩ dặn thêm khi giao. Trợ lý AI không nói liều.</small></div></div>
+  <div class="btns"><button class="btn pri" onclick="this.parentNode.innerHTML='<div class=&quot;box ok&quot;><span class=&quot;n&quot;>6</span>Đã đặt, giao trong 2 giờ. <button class=&quot;btn out&quot; onclick=&quot;this.parentNode.innerHTML=\\'Đã huỷ đơn (trước khi giao).\\'&quot;>Huỷ đơn</button></div>'">Đặt mua</button></div>`);
+ consent('Người dùng thuốc: mẹ, 75 tuổi. Khách kể: '+t);
+}
+function closeScreen(){const f=S.screenEl&&S.screenEl.querySelector('.form');if(f&&f.querySelector('input,button')){f.innerHTML='<i>Không cần điền nữa: ca đã chuyển cho dược sĩ.</i>'}S.inScreen=false}
 function renderQ(){
  if(!tickets.length){queue.innerHTML='<div class="empty">Chưa có ca nào được chuyển.</div>';return}
  queue.innerHTML=tickets.map(k=>`<div class="ticket ${k.urgent?'urgent':''}">
@@ -274,15 +292,22 @@ async function onMsg(t){
  renderCode();
 }
 function decide(r){
- // 1. dấu hiệu nguy hiểm: luôn trước, mọi thứ khác dừng
+ // 1. dấu hiệu nguy hiểm: luôn trước, mọi thứ khác dừng (kể cả khi đã chuyển dược sĩ)
  if(r.danger) return emergency(r);
+ // 1b. đã chuyển dược sĩ: AI im lặng, tin đi thẳng vào ca
+ if(S.handoff) return toPharmacist(r.t);
  // 2. thuốc kê đơn: cấm
  if(r.rx && !S.inScreen) return rxRefuse(r);
  // 3. hỏi liều: không nói liều
  if(r.dose) return noDose(r);
  // 4. khách gắt khi đang sàng lọc: không hỏi lại, chuyển người với cái đã biết
- if(S.inScreen && (r.angry||r.age)) return routeFromAngry(r);
- // 4b. Claude thấy nhóm nguy cơ mà luật không bắt được: chuyển dược sĩ
+ if(S.inScreen && r.angry) return routeFromAngry(r);
+ // 4b. khách bình tĩnh gõ tuổi thay vì điền thẻ: nhóm nguy cơ thì chuyển, không giả định khách đang gắt
+ if(S.inScreen && r.age){
+  if(r.age.y<12||r.age.y>=65) return route(r,[['amb','người dùng thuốc '+r.age.txt],...(S.seen.elder?[['amb','người dùng thuốc: '+S.seen.elder]]:[]),['unk','thuốc đang dùng: chưa biết']],'Người '+esc(r.age.txt)+' thuộc nhóm cần dược sĩ tư vấn trực tiếp.');
+  return ai('Cảm ơn bạn. Bạn điền nốt các ô còn lại trong thẻ phía trên giúp mình nhé, câu nào không biết thì để trống.');
+ }
+ // 4c. Claude thấy nhóm nguy cơ mà luật không bắt được: chuyển dược sĩ
  if(r.forceRoute && !r.danger){ if(r.nondrug) nondrug(r,true); return route(r,[['amb','Claude: người dùng thuốc '+(r.ai.nguoi_dung_thuoc||'chưa rõ')],...(r.ai.bang_chung||[]).map(q=>['amb',q])],(r.nondrug?'<b>Việc 2: thuốc.</b> ':'')+'Người sẽ dùng thuốc thuộc nhóm cần dược sĩ tư vấn trực tiếp.'); }
  // 5. nhóm nguy cơ hoặc dùng thuốc lâu không đỡ: chuyển dược sĩ
  const risk=riskOf(r);
@@ -333,7 +358,7 @@ function screen(r){
  S.inScreen=true;hit('soan_goi_y');
  const pre=r.child?'con':r.elder?'parent':r.preg?'me':'';
  S.form={who:pre};
- const d=ai(`Để không gợi ý nhầm, mình cần biết về <b>người sẽ dùng thuốc</b>. Bạn chọn nhanh trong một lần, câu nào không biết thì để trống.
+ const d=S.screenEl=ai(`Để không gợi ý nhầm, mình cần biết về <b>người sẽ dùng thuốc</b>. Bạn chọn nhanh trong một lần, câu nào không biết thì để trống.
   <div class="box warn"><span class="n">4</span><div class="form">
    <label>Ai sẽ dùng thuốc?<div class="seg" data-k="who">${[['me','Tôi'],['con','Con tôi'],['parent','Bố/mẹ tôi'],['other','Người khác']].map(([v,l])=>`<button type="button" data-v="${v}" class="${v===pre?'on':''}">${l}</button>`).join('')}</div></label>
    <label>Tuổi <input data-k="age" type="number" min="0" placeholder="vd 34" value="${r.age?Math.round(r.age.y):''}"></label>
@@ -394,9 +419,10 @@ function routeFromAngry(r){
  S.inScreen=false;
  const risk=[];if(r.age)risk.push(['amb','người dùng thuốc '+r.age.txt]);if(S.seen.elder)risk.push(['amb','người dùng thuốc: '+S.seen.elder]);risk.push(['unk','thuốc đang dùng: chưa biết']);if(r.angry)risk.push(['', 'khách không muốn trả lời thêm']);
  const chips_=chips(risk);
- ai(`Mình hiểu bạn đang sốt ruột, mình không hỏi thêm nữa. Với người ${r.age?esc(r.age.txt):'lớn tuổi'}, thuốc ho có thể không hợp với thuốc bác đang dùng (ví dụ thuốc huyết áp), nên mình <b>không chọn đại một loại</b>. Mình chuyển ngay cho dược sĩ kèm những gì bạn đã kể; dược sĩ trả lời được ngay, thường dưới 3 phút.
+ const who=(S.seen.elder||r.elder||'người nhà').toLowerCase(),med=/(?<!\p{L})ho(?!\p{L})/iu.test(S.texts.join(' '))?'thuốc ho':'thuốc';
+ ai(`Mình hiểu bạn đang sốt ruột, mình không hỏi thêm nữa. Với người ${r.age?esc(r.age.txt):'lớn tuổi'}, ${med} có thể không hợp với thuốc bác đang dùng (ví dụ thuốc huyết áp), nên mình <b>không chọn đại một loại</b>. Mình chuyển ngay cho dược sĩ kèm những gì bạn đã kể; dược sĩ trả lời được ngay, thường dưới 3 phút.
   <div class="box ok">Đang nối với dược sĩ · vị trí 1</div>${chips_}`);
- ticket({kind:'consult',rows:[['Câu gốc','"'+esc(S.texts.join(' / '))+'"'],['Người dùng thuốc','Mẹ của khách · '+(r.age?esc(r.age.txt):'lớn tuổi')],['Chưa biết','Thuốc đang dùng, bệnh nền, ho bao lâu'],['Lưu ý','Khách đang gắt: hỏi gọn, 1 câu về thuốc đang dùng'],['AI đã làm','Không gợi ý sản phẩm']],actions:[['Nhận ca',()=>add('ph','<div class="who">Dược sĩ Lan (dựng)</div>Chào bạn, mình là dược sĩ. Chỉ một câu thôi: bác đang uống thuốc huyết áp hay thuốc gì hằng ngày không ạ?'),'Đang tư vấn']]});
+ const k=ticket({kind:'consult',elder:true,rows:[['Câu gốc','"'+esc(S.texts.join(' / '))+'"'],['Người dùng thuốc',esc(who[0].toUpperCase()+who.slice(1))+' của khách · '+(r.age?esc(r.age.txt):'lớn tuổi')],['Chưa biết','Thuốc đang dùng, bệnh nền, bị bao lâu'],['Lưu ý','Khách đang gắt: hỏi gọn, 1 câu về thuốc đang dùng'],['AI đã làm','Không gợi ý sản phẩm. Không hỏi thêm sau khi khách gắt.']],actions:[['Nhận ca',()=>{k.accepted=true;add('ph','<div class="who">Dược sĩ Lan (dựng)</div>Chào bạn, mình là dược sĩ. Chỉ một câu thôi: bác đang uống thuốc huyết áp hay thuốc gì hằng ngày không ạ?');sys('Dược sĩ đang giữ cuộc chat. Trợ lý AI tạm dừng.');if(S.case===2)setQuick([['Mẹ mình uống thuốc huyết áp amlodipin hằng ngày',()=>onMsg('Mẹ mình uống thuốc huyết áp amlodipin hằng ngày')]])},'Đang tư vấn']]});
 }
 function routeSimple(why){ai('Mình đã chuyển cho dược sĩ trực. Bạn không phải kể lại.<div class="box ok">Đang nối với dược sĩ · vị trí 1</div>');ticket({kind:'consult',rows:[['Lý do',esc(why)],['AI đã làm','Không gợi ý sản phẩm']],actions:[['Nhận ca',()=>add('ph','<div class="who">Dược sĩ Lan (dựng)</div>Chào bạn, mình là dược sĩ, mình giúp gì được ạ?'),'Đang tư vấn']]})}
 function fallback(r){ai(`Mình chưa chắc bạn cần gì. Mình giúp được: kiểm giá và đặt giữ sản phẩm không kê đơn, hỏi vài câu rồi chuyển dược sĩ, hoặc báo khi cần đi khám ngay.<div class="btns"><button class="btn pri" onclick="routeSimple('Khách hỏi ngoài các mục AI hiểu')">Nói chuyện với dược sĩ</button></div>`)}
@@ -493,6 +519,8 @@ else if(q.get('q')){setTimeout(()=>{quick.innerHTML='';onMsg(q.get('q'))},300)}
 else if(q.get('auto')){const c=+(q.get('case')||1);setTimeout(()=>{quick.querySelector('button')?.click();
  setTimeout(()=>{if(c===2)quick.querySelector('button')?.click();if(c===4)quick.querySelector('button')?.click();},700);
  setTimeout(()=>{if(c===4){const b=[...document.querySelectorAll('.ticket .btn.pri')][0];b&&b.click()}},1500);
+ // ca 2: dược sĩ nhận ca → khách trả lời thuốc đang dùng → dược sĩ chọn sản phẩm
+ if(c===2){const pri=()=>document.querySelector('.ticket .btn.pri')?.click();setTimeout(pri,1500);setTimeout(()=>quick.querySelector('button')?.click(),1900);setTimeout(pri,2600)}
 },300)}
 
 // ================= Màn hình so sánh A · B · C song song =================

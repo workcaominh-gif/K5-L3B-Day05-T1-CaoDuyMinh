@@ -85,6 +85,8 @@ Phủ lớp: ① K1 · ② K2, K4, K5, K8 · ③ K6, K9 · ④ K3, K4, K5, K7, K
 - **Người dùng thấy:** "Đang nối với dược sĩ · vị trí 1". Chip `người dùng thuốc 75 tuổi`, `người dùng thuốc: Mẹ`, `thuốc đang dùng: chưa biết` (viền đứt), `khách không muốn trả lời thêm`.
 - **Làm gì tiếp:** không phải làm gì; dược sĩ nhắn trước. Ở màn hình dược sĩ có dòng **"Lưu ý: khách đang gắt, hỏi gọn, 1 câu về thuốc đang dùng"**, nên câu đầu tiên của dược sĩ là đúng câu còn thiếu.
 - **Ai được báo:** dược sĩ trực, ngay khi khách gắt, ở mức ưu tiên thường (không có dấu hiệu nguy hiểm).
+- **Sau khi chuyển: AI im lặng.** Khi dược sĩ đã giữ cuộc chat, tin của khách đi thẳng vào ca, AI không trả lời; chỉ luật dấu hiệu nguy hiểm vẫn chạy. Lý do: câu trả lời của khách cho dược sĩ ("mẹ uống thuốc huyết áp amlodipin") chứa đúng từ khoá thuốc kê đơn. Nếu AI vẫn đọc tin, nó từ chối như thể khách đòi mua thuốc kê đơn, ngay giữa lúc dược sĩ đang tư vấn. Đây cũng là lỗi sửa câu chữ không cứu được: phải có trạng thái "dược sĩ đang giữ chat" trong thiết kế.
+- **Kết thúc ca:** dược sĩ chọn sản phẩm; thẻ sản phẩm có nhãn "Dược sĩ Lan đã chọn", không có liều; sau đó hỏi khách có lưu ghi chú "mẹ 75 tuổi, đang dùng amlodipin" không, mặc định Không lưu.
 - **Quyết định: dừng và chuyển người, không hỏi lại.**
   - *Đã loại "hỏi lại"* ("bác có đang uống thuốc gì không?"): khách đã gắt; hỏi thêm làm khách bỏ đi và tự mua ngoài, nghĩa là mất luôn cơ hội sàng lọc.
   - *Đã loại "trả lời kèm giới hạn"* (gợi ý một siro ho "nhẹ" kèm "hỏi bác sĩ nếu đang dùng thuốc khác"): vẫn là `goi_y_san_pham` khi thiếu đúng thông tin quyết định, và đẩy việc kiểm tra tương tác thuốc sang người không có chuyên môn.

@@ -38,7 +38,7 @@ Khung **"Chỗ trong code vừa chạy"** (trên cùng bên phải) hiện đún
 ## Bấm qua ca khó
 
 1. Chọn **"① Bé 2 tuổi sốt, li bì"**, rồi bấm tin nhắn gợi ý màu xanh. Trợ lý hiện khung đỏ đi khám / gọi 115 và không có thẻ sản phẩm. Bên phải, ca **KHẨN** vào màn hình dược sĩ, ghi rõ việc phải làm: gọi lại khách trong 2 phút.
-2. Chọn **"② Mẹ 75 tuổi ho, khách gắt"**. Trợ lý hiện thẻ sàng lọc. Bấm câu trả lời gắt: trợ lý không hỏi lại, không "bán đại", mà chuyển dược sĩ kèm những gì khách đã kể.
+2. Chọn **"② Mẹ 75 tuổi ho, khách gắt"**. Trợ lý hiện thẻ sàng lọc. Bấm câu trả lời gắt: trợ lý không hỏi lại, không "bán đại", mà chuyển dược sĩ kèm những gì khách đã kể; thẻ sàng lọc đóng lại. Bấm **Nhận ca** bên màn hình dược sĩ: dược sĩ hỏi đúng một câu về thuốc bác đang dùng, và **trợ lý AI tạm dừng**. Bấm câu trả lời "amlodipin": tin đi thẳng vào ca của dược sĩ, AI không chen vào (trước bản sửa, AI hiểu nhầm "thuốc huyết áp" là đòi mua thuốc kê đơn và từ chối). Bấm **Gợi ý sản phẩm (dược sĩ chọn)**: thẻ sản phẩm có nhãn "Dược sĩ Lan đã chọn", rồi hỏi có lưu ghi chú sức khoẻ không. Nếu khách bình tĩnh gõ "mẹ mình 75 tuổi" thay vì gắt, trợ lý chuyển dược sĩ mà không nói "bạn đang sốt ruột". Nếu đang chờ mà khách nhắn dấu hiệu nguy hiểm ("mẹ khó thở"), luật nguy hiểm vẫn chạy và hiện khung đỏ.
 3. Chọn **"④ Đau họng 2 ngày"**. Bấm câu điền sẵn thẻ sàng lọc để thấy gợi ý thuốc nằm ở trạng thái **chờ dược sĩ duyệt**. Có nút "giả lập quá 5 phút" để xem đường đi khi không ai duyệt. Bấm "Duyệt & gửi" bên màn hình dược sĩ, thẻ sản phẩm mới đến khách, kèm hỏi có lưu ghi chú sức khoẻ không.
 4. **Ca lạ:** chọn "Ca lạ: tự gõ" và gõ bất kỳ câu nào. Có sẵn câu mẫu: thuốc kê đơn, bà bầu, hỏi liều.
 
