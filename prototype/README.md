@@ -16,7 +16,7 @@
 Mở <http://localhost:8767> (hoặc `?k=K5` để vào thẳng một kịch bản).
 
 1. Chọn kịch bản **K1–K11**; ★ là 2 kịch bản đắt nhất. Thẻ lớn ở đầu trang (đủ to cho máy chiếu) ghi: tin người dùng · lớp · AI có thể sai thế nào (giả định) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
-2. Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Ô kết luận lớn ở đầu mỗi cột (đỏ ✗ / xanh ✓) nói ngay cột đó đúng hay sai.
+2. Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Bấm "▸ Xem kết luận" ở đầu mỗi cột để hiện ô đỏ ✗ / xanh ✓ (ẩn sẵn, để người xem tự nhận ra trước). Chi tiết kịch bản (lớp, tool đang thử, nhãn, giả định lỗi, cách sửa) nằm dưới hai khung chat.
    Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Cả hai cột nhận cùng một tin.
    - **Trước:** với 11 kịch bản, cột này mô phỏng đúng lỗi giả định ở §2 (ghi nhãn "Mô phỏng lỗi giả định"). Ca lạ gõ tay thì gọi Claude thật với prompt bán hàng. Nhãn đỏ báo "N chỗ nói liều" (đã che), "không ai được báo", "lưu hồ sơ khi chưa xin phép".
    - **Sau:** thiết kế của nhóm.

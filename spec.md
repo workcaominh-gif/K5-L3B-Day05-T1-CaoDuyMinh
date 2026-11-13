@@ -255,8 +255,8 @@ Lời hứa mới chậm hơn vài phút cho người lớn khoẻ mạnh, nhưn
 
 **So sánh trước / sau ngay trên prototype (trang mặc định).** Trang mở ở màn hình hai cột, chọn ca theo đúng 11 kịch bản §2 (K1–K11, ★ là 2 kịch bản đắt nhất).
 
-- **Thẻ kịch bản ở đầu trang** hiện đủ các ý của guide §2.2: tin người dùng · lớp · AI có thể sai thế nào (giả định, trỏ về tool) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
-- **Ô kết luận lớn ở đầu mỗi cột** (đỏ ✗ / xanh ✓) cập nhật sau mỗi tin, nên nhìn lướt là so được.
+- **Thẻ kịch bản** (tin người dùng ở đầu trang; phần chi tiết nằm dưới hai khung chat) hiện đủ các ý của guide §2.2: tin người dùng · lớp · AI có thể sai thế nào (giả định, trỏ về tool) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
+- **Ô kết luận ở đầu mỗi cột** (đỏ ✗ / xanh ✓) cập nhật sau mỗi tin; ẩn sẵn, bấm "Xem kết luận" mới hiện, để người xem tự so trước.
 - **Cột Trước · AI làm theo lời khách:** với 11 kịch bản §2, cột này **mô phỏng đúng lỗi giả định** ở cột "AI có thể sai thế nào", với câu trả lời và tool call cố định, ghi nhãn "Mô phỏng lỗi giả định (§2)". Nhờ vậy demo luôn cho thấy đúng lỗi nhóm đã lường trước. Với **ca lạ gõ tay**, cột này gọi **Claude thật** với một prompt bán hàng kiểu thường gặp (chốt đơn, hạn chế chuyển dược sĩ), mọi tool ở mức tự làm; số liều model viết ra bị server che trước khi hiện.
 - **Cột Sau · Thiết kế của nhóm:** luật cứng chạy trước, Claude chỉ phân loại.
 - **Gửi tin:** nút "Gửi tin 1 / tin 2" gửi cùng một tin cho cả hai cột; ô "ca lạ" cũng vậy.

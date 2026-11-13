@@ -136,6 +136,8 @@ mark.fab{background:var(--r);color:#fff;border-radius:4px;padding:0 4px}
 .stock{display:grid;gap:4px;margin:8px 0}.stock>div{display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:5px 8px;font-size:13.5px}
 .stock>div span{flex:1}.stock>div.out{color:var(--mut)}.stock>div.out b{color:var(--r)}.stock>div.hl{outline:2px solid var(--b)}
 .ask{background:#fff;border-radius:10px;padding:8px 10px;margin-top:8px}.ask small{color:var(--mut)}
+.vbox.on{cursor:pointer}.vbox.closed{background:#fff;color:var(--b);font-size:14px;font-weight:600;padding:8px 14px}
+.cardx{padding:0 16px 20px}
 /* ===== giao diện gọn: bỏ viền, chat dạng hộp xanh (khách) / xám (AI) ===== */
 body{background:#f7f8fa}
 header,.cmp-head{border-bottom:0;box-shadow:0 1px 0 rgba(0,0,0,.04)}
@@ -738,11 +740,12 @@ if(!SINGLE){
   <div class="cmp-row cases" id="kbtn">${SC.map((x,i)=>`<button data-k="${i}" class="${i===k0?'on':''}">${x.star?'★ ':''}${x.id}</button>`).join('')}<span class="sub">★ = 2 kịch bản đắt nhất</span></div>
   <div id="card" class="scard"></div>
   <form class="cmp-row" id="cform"><span id="cquick" class="quick" style="padding:0"></span><input id="cin" autocomplete="off" placeholder="Hoặc gõ ca lạ, gửi cho cả hai cột…"><button class="btn pri">Gửi cho cả hai</button></form></div>
-  <div class="cmp-grid two">${cols.map(([k,m,t,d])=>`<div class="cmp-col ${k}"><h3>${t}<small>${d}</small></h3><div class="vbox" id="v-${m}"></div><iframe data-m="${m}" src="?embed=1&mode=${m}&case=0&v=${Date.now()}"></iframe></div>`).join('')}</div>`;
+  <div class="cmp-grid two">${cols.map(([k,m,t,d])=>`<div class="cmp-col ${k}"><h3>${t}<small>${d}</small></h3><div class="vbox" id="v-${m}"></div><iframe data-m="${m}" src="?embed=1&mode=${m}&case=0&v=${Date.now()}"></iframe></div>`).join('')}</div>
+  <div id="cardx" class="cardx"></div>`;
  const frames=[...document.querySelectorAll('iframe')];
  const W=()=>frames.map(f=>f.contentWindow);
  const sendAll=t=>{W().forEach(w=>{try{w.onMsg(t)}catch(e){}})};
- const setV=(m,t)=>{const e=document.getElementById('v-'+m);if(!e||!t)return;e.textContent=t;e.className='vbox on '+(t.startsWith('✗')?'bad':t.startsWith('✓')?'good':'')};
+ const setV=(m,t)=>{const e=document.getElementById('v-'+m);if(!e||!t)return;e.dataset.t=t;e.dataset.k=t.startsWith('✗')?'bad':t.startsWith('✓')?'good':'';e.className='vbox on closed';e.textContent='▸ Xem kết luận';e.onclick=()=>{const open=e.classList.contains('closed');e.className='vbox on '+(open?e.dataset.k:'closed');e.textContent=open?e.dataset.t:'▸ Xem kết luận'}};
  const nh=n=>n==='không chấp nhận được'?'red':n==='sửa được'?'amb':'';
  let cur=k0;
  const show=i=>{cur=i;const x=SC[i];
@@ -750,6 +753,8 @@ if(!SINGLE){
   document.querySelectorAll('[data-k]').forEach(b=>b.classList.toggle('on',+b.dataset.k===i));
   document.getElementById('card').innerHTML=`<div class="big">
    <div class="bq"><span class="lbl">${x.star?'★ ':''}${x.id} · Tin người dùng</span>"${esc(x.msgs[0])}"${x.msgs[1]?`<div class="bq2">rồi: "${esc(x.msgs[1])}"</div>`:''}</div>
+   </div>`;
+  document.getElementById('cardx').innerHTML=`<div class="big">
    <div class="brow">
     <div><span class="lbl">Lớp</span>${esc(x.lop)}</div>
     <div><span class="lbl">Tool đang thử</span>${x.tools.map(t=>`<code>${t}</code>`).join(' ')}</div>
@@ -766,7 +771,7 @@ if(!SINGLE){
  };
  document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>show(+b.dataset.k));
  let loaded=0;frames.forEach(f=>f.addEventListener('load',()=>{if(++loaded===2){show(cur);if(q.get('auto'))[...document.querySelectorAll('#cquick button')].forEach((b,i)=>setTimeout(()=>b.click(),400+i*15000))}}));
- document.getElementById('cform').onsubmit=e=>{e.preventDefault();const v=document.getElementById('cin').value.trim();if(!v)return;document.getElementById('cin').value='';sendAll(v);['naive','ours'].forEach(m=>{const e=document.getElementById('v-'+m);if(e){e.textContent='Ca lạ: so sánh hai câu trả lời bên dưới';e.className='vbox on'}})};
+ document.getElementById('cform').onsubmit=e=>{e.preventDefault();const v=document.getElementById('cin').value.trim();if(!v)return;document.getElementById('cin').value='';sendAll(v);['naive','ours'].forEach(m=>{const e=document.getElementById('v-'+m);if(e){e.textContent='Ca lạ: so sánh hai câu trả lời bên dưới';e.className='vbox on closed';e.onclick=null}})};
 }
 </script>
 </body></html>
