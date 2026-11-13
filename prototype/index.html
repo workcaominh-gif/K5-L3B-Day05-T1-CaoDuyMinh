@@ -71,10 +71,27 @@ pre.src{margin:0;padding:6px 0;font:12px/1.5 ui-monospace,Menlo,monospace;overfl
 pre.src span{display:block;padding:0 10px;white-space:pre}pre.src span.on{background:#fff3c4}
 pre.src i{color:var(--mut);font-style:normal;display:inline-block;width:34px;user-select:none}
 .verdict{font-size:13px;padding:6px 10px;border-top:1px solid var(--line)}
+/* ---- chế độ nhúng (một cột trong màn hình so sánh) ---- */
+body.embed header,body.embed .foot{display:none}
+body.embed main{grid-template-columns:1fr;padding:8px;gap:10px}
+body.embed aside .panel:not(#codep):not(#rx){display:none}
+body.embed .phone{min-height:0}body.embed .chat{max-height:470px;min-height:300px}
+body.embed .panel{padding:10px 12px}body.embed .panel h2{font-size:14px}
+/* ---- màn hình so sánh A · B · C ---- */
+.cmp-head{padding:14px 20px 10px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.cmp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.cmp-row input{flex:1;min-width:260px;font:inherit;padding:8px 12px;border:1.5px solid var(--b);border-radius:999px}
+.cmp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:12px 16px}
+@media (max-width:1100px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-col{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.cmp-col h3{margin:0;padding:10px 14px;font-size:15px}.cmp-col h3 small{display:block;font-weight:400;color:var(--mut);font-size:12.5px}
+.cmp-col.a h3{background:var(--rb)}.cmp-col.b h3{background:var(--ab)}.cmp-col.c h3{background:var(--gb)}
+.cmp-col iframe{border:0;width:100%;height:1250px;background:var(--bg)}
 .foot{font-size:12px;color:var(--mut);padding:0 24px 20px}
 </style></head>
 <body>
 <header>
+ <a class="btn out" style="float:right" id="tocmp" href="?view=compare">Xem A · B · C song song</a>
  <h1>Hỏi dược sĩ · trợ lý AI trả lời đầu tiên: tự trả lời, hỏi sàng lọc, chuyển dược sĩ hay khuyên đi khám</h1>
  <div class="sub">Prototype T1 · Nhóm CaoDuyMinh. Dữ liệu dựng, tên sản phẩm dựng. Mỗi tin khách được <b>Claude thật</b> phân loại qua <code>server.py</code> (key nằm ở server, không ở trang); luật cứng chạy song song và lấy kết quả thận trọng hơn. Không có server thì trang tự dùng luật.</div>
  <div class="cases" id="modes"><span class="sub">So sánh trước / sau:</span>
@@ -406,7 +423,7 @@ const CODE={
 };
 async function loadSrc(){if(SRC)return;try{SRC=(await (await fetch(location.pathname,{cache:'no-store'})).text()).split('\n');SRCOFF=0}catch(e){SRC=document.scripts[document.scripts.length-1].textContent.split('\n');SRCOFF=-1}}
 async function renderCode(){
- await loadSrc();const box=$('#code');const seen=[...new Set(TRACE)].filter(k=>CODE[k]);
+ const box=$('#code');if(!box)return;await loadSrc();const seen=[...new Set(TRACE)].filter(k=>CODE[k]);
  if(!seen.length){box.innerHTML='<div class="empty">Chưa có nhánh nào chạy.</div>';return}
  box.innerHTML=seen.map(k=>{const c=CODE[k];
   const blocks=c.m.map(mk=>{const i=SRC.findIndex(l=>l.includes(mk));if(i<0)return '';
@@ -432,7 +449,7 @@ function start(c){
  add('sys',MODE==='ours'?'Bạn đang chat với <b>trợ lý AI</b> của Pharmacity. Câu chuyên môn sẽ được chuyển cho dược sĩ.':'<b style="color:var(--r)">Chế độ so sánh '+(MODE==='today'?'A · cách làm hôm nay':'B · AI làm theo lời khách')+'</b>: đây là thiết kế nhóm đã loại.');TRACE=[];renderCode&&renderCode();
  if(CASES[c]) setQuick([[CASES[c],()=>onMsg(CASES[c])]]);
  else setQuick([['Cho mình mua Augmentin 625, đơn cũ hết rồi',()=>onMsg('Cho mình mua Augmentin 625, đơn cũ hết rồi')],['Mình đang bầu 3 tháng, bị cảm sổ mũi 2 hôm, có thuốc nào không ảnh hưởng em bé không ạ?',()=>onMsg('Mình đang bầu 3 tháng, bị cảm sổ mũi 2 hôm, có thuốc nào không ảnh hưởng em bé không ạ?')],['Bé 15kg uống hạ sốt bao nhiêu ml?',()=>onMsg('Bé 15kg uống hạ sốt bao nhiêu ml?')]]);
- $('#inp').focus({preventScroll:true});
+ $('#inp').focus({preventScroll:true});const tc=document.getElementById('tocmp');if(tc)tc.href='?view=compare&case='+c;
 }
 document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>start(+b.dataset.case));
 $('#compose').onsubmit=e=>{e.preventDefault();const v=$('#inp').value.trim();if(!v)return;$('#inp').value='';quick.innerHTML='';onMsg(v)};
@@ -440,10 +457,33 @@ $('#useai').onchange=e=>{S.useAI=e.target.checked};
 $('#ann').onchange=e=>document.body.classList.toggle('hide-n',!e.target.checked);
 // ?case=1&auto=1 → tự bấm tới cuối, dùng để chụp ảnh
 const q=new URLSearchParams(location.search);if(q.get('mode')){MODE=q.get('mode');document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===MODE));$('#codemode').textContent='· chế độ '+({today:'A · hôm nay',naive:'B · AI làm theo lời khách',ours:'C · thiết kế của nhóm'})[MODE]}start(+(q.get('case')||1));
-if(q.get('q')){setTimeout(()=>{quick.innerHTML='';onMsg(q.get('q'))},300)}
+if(q.get('view')==='compare'){}
+else if(q.get('q')){setTimeout(()=>{quick.innerHTML='';onMsg(q.get('q'))},300)}
 else if(q.get('auto')){const c=+(q.get('case')||1);setTimeout(()=>{quick.querySelector('button')?.click();
  setTimeout(()=>{if(c===2)quick.querySelector('button')?.click();if(c===4)quick.querySelector('button')?.click();},700);
  setTimeout(()=>{if(c===4){const b=[...document.querySelectorAll('.ticket .btn.pri')][0];b&&b.click()}},1500);
 },300)}
+
+// ================= Màn hình so sánh A · B · C song song =================
+if(q.get('embed')){document.body.classList.add('embed')}
+if(q.get('view')==='compare'){
+ const c0=+(q.get('case')||1);
+ const cols=[['a','today','A · Hôm nay','Câu chuyên môn vào một hàng chờ chung'],['b','naive','B · AI làm theo lời khách','Mọi tool tự làm, không có luật chạy trước'],['c','ours','C · Thiết kế của nhóm','Luật cứng + Claude thật (chỉ cột này gọi Claude)']];
+ document.body.innerHTML=`<div class="cmp-head"><a class="btn out" style="float:right" href="./">Về một màn hình</a>
+  <h1>Cùng một tin, ba cách làm: A · B · C song song</h1>
+  <div class="sub">Mỗi cột là chính trang prototype ở một chế độ. Gõ một lần, cả ba cột nhận cùng một tin. Khung "Chỗ trong code vừa chạy" dưới mỗi khung chat chỉ dòng code đã quyết định.</div>
+  <div class="cmp-row cases"><span class="sub">Ca:</span>${[[1,'① Bé 2 tuổi sốt, li bì'],[2,'② Mẹ 75 tuổi ho, khách gắt'],[3,'③ Nước muối sinh lý'],[4,'④ Đau họng 2 ngày'],[0,'Ca lạ']].map(([v,l])=>`<button data-cc="${v}" class="${v===c0?'on':''}">${l}</button>`).join('')}</div>
+  <form class="cmp-row" id="cform"><input id="cin" autocomplete="off" placeholder="Gõ tin của khách, gửi cho cả ba cột…"><button class="btn pri">Gửi cho cả ba</button><span id="cquick" class="quick" style="padding:0"></span></form></div>
+  <div class="cmp-grid">${cols.map(([k,m,t,d])=>`<div class="cmp-col ${k}"><h3>${t}<small>${d}</small></h3><iframe data-m="${m}" src="?embed=1&mode=${m}&case=${c0}"></iframe></div>`).join('')}</div>`;
+ const frames=[...document.querySelectorAll('iframe')];
+ const W=()=>frames.map(f=>f.contentWindow);
+ const sendAll=t=>{W().forEach(w=>{try{w.document.getElementById('quick').innerHTML='';w.onMsg(t)}catch(e){}})};
+ const quickFor=c=>{const box=document.getElementById('cquick');box.innerHTML='';const list=CASES[c]?[CASES[c]]:['Cho mình mua Augmentin 625, đơn cũ hết rồi','Bé 15kg uống hạ sốt bao nhiêu ml?','Bé nhà mình cứ nằm im, không chịu bú từ sáng, mua gì cho bé được không'];
+  list.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t.length>60?t.slice(0,58)+'…':t;b.title=t;b.onclick=()=>sendAll(t);box.appendChild(b)})};
+ let cur=c0;quickFor(cur);
+ document.querySelectorAll('[data-cc]').forEach(b=>b.onclick=()=>{cur=+b.dataset.cc;document.querySelectorAll('[data-cc]').forEach(x=>x.classList.toggle('on',x===b));W().forEach(w=>{try{w.start(cur)}catch(e){}});quickFor(cur)});
+ document.getElementById('cform').onsubmit=e=>{e.preventDefault();const v=document.getElementById('cin').value.trim();if(!v)return;document.getElementById('cin').value='';sendAll(v)};
+ if(q.get('auto')){let n=0;frames.forEach(f=>f.addEventListener('load',()=>{if(++n===3)setTimeout(()=>sendAll(CASES[c0]||'Bé nhà mình cứ nằm im, không chịu bú từ sáng, mua gì cho bé được không'),400)}))}
+}
 </script>
 </body></html>

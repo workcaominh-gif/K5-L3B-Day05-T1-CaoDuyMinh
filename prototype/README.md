@@ -8,7 +8,7 @@
   - Claude **chỉ được làm quyết định chặt hơn** bộ luật cứng trong trang, không bao giờ nới ra.
   - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
   - Câu trích nào không có trong tin của khách thì server bỏ đi.
-  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (21 lần gọi, tin dựng, không có key).
+  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (33 lần gọi, tin dựng, không có key).
 - **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
 
 ## So sánh trước / sau trên cùng một trang
@@ -23,12 +23,14 @@ Hàng nút **"So sánh trước / sau"** ở đầu trang chạy lại **cùng m
 
 Khung **"Chỗ trong code vừa chạy"** (trên cùng bên phải) hiện đúng nhánh code vừa chạy cho tin đó, kèm số dòng `index.html:NNN` đọc từ chính file đang chạy. Đỏ là cách đã loại (A, B), xanh là thiết kế của nhóm (C).
 
-Ảnh so sánh: `compare-today.png` (A) · `compare-naive.png` (B) · `compare-ours.png` (C).
+**Xem cả ba cột cùng lúc:** bấm **"Xem A · B · C song song"** (góc trên phải), hoặc mở `?view=compare`. Ba cột A · B · C chạy cạnh nhau; một ô nhập ở trên gửi **cùng một tin** cho cả ba. Mỗi cột có khung chat, khung code vừa chạy và màn hình dược sĩ của riêng nó. Chỉ cột C gọi Claude.
+
+Ảnh: `compare-abc-1.png` (ca ① song song) · `compare-abc-2.png` (ca ② song song) · `compare-today.png` / `compare-naive.png` / `compare-ours.png` (từng chế độ, đủ màn hình).
 
 ## Kịch bản demo 4 phút
 
 1. **(30") Lát cắt:** đọc câu lát cắt; chỉ nhãn số 1.
-2. **(60") Ca ① ở chế độ A, rồi B, rồi C:** cùng một tin. A: khách bé li bì nằm hàng chờ vị trí 7. B: AI bán hạ sốt. C: khung đỏ, 115, ca KHẨN bên dược sĩ. Mỗi lần đổi chế độ, chỉ khung code: dòng vàng là chỗ khác nhau.
+2. **(60") Ca ① ở màn hình song song** (`?view=compare`), bấm tin mẫu một lần: A: khách bé li bì nằm hàng chờ vị trí 7. B: AI bán hạ sốt. C: khung đỏ, 115, ca KHẨN bên dược sĩ. Mỗi lần đổi chế độ, chỉ khung code: dòng vàng là chỗ khác nhau.
 3. **(60") Ca ② ở chế độ C:** khách gắt, AI không hỏi lại, chuyển dược sĩ. Chỉ dòng "Claude (AI thật)" (số 10) và nhánh code `routeFromAngry`.
 4. **(40") Mức tự chủ:** ca ④, gợi ý thuốc nằm ở "chờ dược sĩ duyệt" (số 5). Trả lời câu "sai thì ai mất gì".
 5. **(50") Ca lạ:** chọn "Ca lạ: tự gõ", gõ câu TA đưa, đọc khung code để nói nhánh nào chạy và vì sao.
