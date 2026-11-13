@@ -8,32 +8,33 @@
   - Claude **chỉ được làm quyết định chặt hơn** bộ luật cứng trong trang, không bao giờ nới ra.
   - Claude **không viết câu gửi khách**: mọi câu khách đọc là mẫu cố định.
   - Câu trích nào không có trong tin của khách thì server bỏ đi.
-  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (40 lần gọi, tin dựng, không có key).
+  - Log của các lần gọi thật: [`ai-log.jsonl`](ai-log.jsonl) (cột Sau, phân loại) và [`ai-log-naive.jsonl`](ai-log-naive.jsonl) (cột Trước) (111 lần gọi cột Sau, 71 lần gọi cột Trước, tin dựng, không có key).
 - **Phần mock:** màn hình dược sĩ, đồng hồ chờ, bản đồ cơ sở y tế và tên sản phẩm đều là dựng.
 
-## So sánh trước / sau trên cùng một trang
+## Trang mặc định: kịch bản §2, trước và sau
 
-Hàng nút **"So sánh trước / sau"** ở đầu trang chạy lại **cùng một ca** theo ba cách:
+Mở <http://localhost:8767> (hoặc `?k=K5` để vào thẳng một kịch bản).
 
-| Chế độ | Là gì | Ca ① bé li bì ra sao |
-|---|---|---|
-| **A · Hôm nay** | Sản phẩm thật hôm nay: AI chỉ trả lời giá, khuyến mãi; câu chuyên môn vào một hàng chờ chung | "Vui lòng chờ", vị trí 7; dược sĩ nhận ca "thường", không có tóm tắt |
-| **B · AI làm theo lời khách** | Tích hợp sâu nhưng mọi tool ở mức tự làm, không có luật chạy trước | Thẻ "Hạ sốt trẻ em" + Đặt mua; tự lưu hồ sơ sức khoẻ |
-| **C · Thiết kế của nhóm** | Spec §3–§4 | Khung đỏ đi khám / 115 ngay, dược sĩ nhận ca KHẨN |
+1. Chọn kịch bản **K1–K11**; ★ là 2 kịch bản đắt nhất. Thẻ lớn ở đầu trang (đủ to cho máy chiếu) ghi: tin người dùng · lớp · AI có thể sai thế nào (giả định) · sản phẩm tốt nên làm gì (cách sửa) · nhãn và tên lỗi.
+2. **Bảng 5 tool** ngay dưới thẻ: đảo lại được không · mức ở cột Trước · mức của nhóm · vì sao. Dòng tô vàng là tool kịch bản đang thử; khi một cột gọi tool, ô của cột đó hiện nhãn "vừa gọi" (đỏ: Trước, xanh: Sau), "bị chặn" hoặc "chờ duyệt".
+3. Bấm **Gửi tin 1**, rồi **Gửi tin 2** nếu có. Cả hai cột nhận cùng một tin.
+   - **Trước:** Claude thật với prompt bán hàng, mọi tool tự làm. Nhãn đỏ báo "N chỗ nói liều" (đã che), "không ai được báo", "lưu hồ sơ khi chưa xin phép".
+   - **Sau:** thiết kế của nhóm.
+4. **Mỗi câu trả lời của AI có khối ReAct** ngay trong bong bóng chat, giống cách Claude hiện tool call: **Thought → Action → Observation → … → Final Answer**.
+   - **Sau:** Thought là luật cứng đọc được gì và nhánh code nào chạy. Action `phan_loai_tin` là lời gọi Claude thật, Observation là kết quả phân loại. Các Action còn lại là tool đã gọi, Observation ghi mức tự chủ (tự làm / chờ duyệt / bị chặn). Ở ca khẩn, thứ tự là luật quyết định trước, Claude ghi thêm sau.
+   - **Trước:** Action là đúng các tool model tự gọi, với tham số thật. Observation ghi rõ "KHÔNG ai duyệt", "KHÔNG hỏi khách". Thought để trống, vì prompt bán hàng không yêu cầu model nêu lý do.
+5. **Ca lạ:** gõ vào ô ở đầu trang, Enter.
+6. Khung **"Chỗ trong code vừa chạy"** dưới mỗi cột chỉ dòng `index.html` đã quyết định.
 
-Khung **"Chỗ trong code vừa chạy"** (trên cùng bên phải) hiện đúng nhánh code vừa chạy cho tin đó, kèm số dòng `index.html:NNN` đọc từ chính file đang chạy. Đỏ là cách đã loại (A, B), xanh là thiết kế của nhóm (C).
-
-**Mặc định trang mở ở màn hình so sánh A · B · C song song** (<http://localhost:8767>). Muốn xem từng chế độ một, kèm bảng mức tự chủ và chú thích, bấm **"Xem từng chế độ"** (`?view=single`). Ba cột A · B · C chạy cạnh nhau; một ô nhập ở trên gửi **cùng một tin** cho cả ba. Mỗi cột có khung chat, khung code vừa chạy và màn hình dược sĩ của riêng nó. Chỉ cột C gọi Claude.
-
-Ảnh: `compare-abc-1.png` (ca ① song song) · `compare-abc-2.png` (ca ② song song) · `compare-today.png` / `compare-naive.png` / `compare-ours.png` (từng chế độ, đủ màn hình).
+"Xem từng chế độ" (`?view=single`) mở một màn hình đầy đủ: bảng mức tự chủ, chú thích các số, và thêm chế độ A "hôm nay".
 
 ## Kịch bản demo 4 phút
 
-1. **(30") Lát cắt:** đọc câu lát cắt; chỉ nhãn số 1.
-2. **(60") Ca ① ở màn hình song song** (trang mặc định), bấm tin mẫu một lần: A: khách bé li bì nằm hàng chờ vị trí 7. B: AI bán hạ sốt. C: khung đỏ, 115, ca KHẨN bên dược sĩ. Mỗi lần đổi chế độ, chỉ khung code: dòng vàng là chỗ khác nhau.
-3. **(60") Ca ② ở chế độ C:** khách gắt, AI không hỏi lại, chuyển dược sĩ. Chỉ dòng "Claude (AI thật)" (số 10) và nhánh code `routeFromAngry`.
-4. **(40") Mức tự chủ:** ca ④, gợi ý thuốc nằm ở "chờ dược sĩ duyệt" (số 5). Trả lời câu "sai thì ai mất gì".
-5. **(50") Ca lạ:** chọn "Ca lạ: tự gõ", gõ câu TA đưa, đọc khung code để nói nhánh nào chạy và vì sao.
+1. **(30") Lát cắt** + thẻ kịch bản ★K4.
+2. **(60") ★K4:** Gửi tin 1. Sau: khung đỏ, 115, dược sĩ nhận ca KHẨN. Trước: model cũng bảo đi khám, nhưng **không ai được báo** và hồ sơ bị lưu lén. Rồi Gửi tin 2 ("cho mình mua hạ sốt thôi").
+3. **(60") ★K5:** Gửi tin 1, rồi tin 2 (khách gắt). Trước: bán siro ho cho người 75 tuổi. Sau: chuyển dược sĩ. Chỉ dòng code `routeFromAngry`.
+4. **(30") K9:** Trước nói liều (đã che, tô đỏ); Sau không.
+5. **(60") Ca lạ** của TA: gõ vào ô trên cùng, đọc khung code để nói nhánh nào chạy.
 
 ## Bấm qua ca khó
 
